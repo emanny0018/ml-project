@@ -20,21 +20,17 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Data Preprocessing
+    - name: Run Data Preprocessing
       run: |
         python scripts/data_preprocessing.py
 
-    - name: Feature Engineering
+    - name: Run Feature Engineering
       run: |
         python scripts/feature_engineering.py
 
-    - name: Model Training
+    - name: Run Model Training
       run: |
         python scripts/model_training.py
-
-    - name: Model Evaluation
-      run: |
-        python scripts/model_evaluation.py
 
     - name: Run Tests
       run: |
