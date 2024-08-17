@@ -7,24 +7,36 @@ def load_cleaned_data(file_path):
 def engineer_features(df):
     """Engineer new features for the dataset."""
 
-    # Check if 'Venue_Code' and 'Opp_Code' exist, and create them if they don't
-    if 'Venue_Code' not in df.columns:
+    # Check if 'Venue' column exists
+    if 'Venue' in df.columns:
         df['Venue_Code'] = df['Venue'].astype('category').cat.codes
-    if 'Opp_Code' not in df.columns:
-        df['Opp_Code'] = df['Opponent'].astype('category').cat.codes
+    else:
+        print("Warning: 'Venue' column not found. Skipping Venue_Code feature.")
 
-    # Example feature engineering steps
-    df['Rolling_HomeGoals'] = df.groupby('Home')['HomeGoals'].rolling(window=5, min_periods=1).mean().reset_index(0, drop=True)
-    df['Rolling_AwayGoals'] = df.groupby('Away')['AwayGoals'].rolling(window=5, min_periods=1).mean().reset_index(0, drop=True)
+    # Check if 'Opponent' column exists and create 'Opp_Code'
+    if 'Opponent' in df.columns:
+        df['Opp_Code'] = df['Opponent'].astype('category').cat.codes
+    else:
+        print("Warning: 'Opponent' column not found. Skipping Opp_Code feature.")
+
+    # Example feature engineering steps (assuming these columns exist)
+    if 'HomeGoals' in df.columns and 'AwayGoals' in df.columns:
+        df['Rolling_HomeGoals'] = df.groupby('Home')['HomeGoals'].rolling(window=5, min_periods=1).mean().reset_index(0, drop=True)
+        df['Rolling_AwayGoals'] = df.groupby('Away')['AwayGoals'].rolling(window=5, min_periods=1).mean().reset_index(0, drop=True)
     
-    df['Venue_Opp_Interaction'] = df['Venue_Code'] * df['Opp_Code']
-    df['Recent_Form_Home'] = df.groupby('Home')['Target'].transform(lambda x: x.rolling(window=5, min_periods=1).mean())
-    df['Recent_Form_Away'] = df.groupby('Away')['Target'].transform(lambda x: x.rolling(window=5, min_periods=1).mean())
+    if 'Venue_Code' in df.columns and 'Opp_Code' in df.columns:
+        df['Venue_Opp_Interaction'] = df['Venue_Code'] * df['Opp_Code']
+
+    if 'Target' in df.columns:
+        df['Recent_Form_Home'] = df.groupby('Home')['Target'].transform(lambda x: x.rolling(window=5, min_periods=1).mean())
+        df['Recent_Form_Away'] = df.groupby('Away')['Target'].transform(lambda x: x.rolling(window=5, min_periods=1).mean())
     
-    df['Decayed_Rolling_HomeGoals'] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.ewm(span=5, adjust=False).mean())
-    df['Decayed_Rolling_AwayGoals'] = df.groupby('Away')['AwayGoals'].transform(lambda x: x.ewm(span=5, adjust=False).mean())
-    
-    df['Home_Advantage'] = (df['Venue'] == 'Home').astype(int)
+    if 'HomeGoals' in df.columns:
+        df['Decayed_Rolling_HomeGoals'] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.ewm(span=5, adjust=False).mean())
+        df['Decayed_Rolling_AwayGoals'] = df.groupby('Away')['AwayGoals'].transform(lambda x: x.ewm(span=5, adjust=False).mean())
+
+    if 'Venue' in df.columns:
+        df['Home_Advantage'] = (df['Venue'] == 'Home').astype(int)
     
     return df
 
