@@ -6,6 +6,13 @@ def load_cleaned_data(file_path):
 
 def engineer_features(df):
     """Engineer new features for the dataset."""
+
+    # Check if 'Venue_Code' and 'Opp_Code' exist, and create them if they don't
+    if 'Venue_Code' not in df.columns:
+        df['Venue_Code'] = df['Venue'].astype('category').cat.codes
+    if 'Opp_Code' not in df.columns:
+        df['Opp_Code'] = df['Opponent'].astype('category').cat.codes
+
     # Example feature engineering steps
     df['Rolling_HomeGoals'] = df.groupby('Home')['HomeGoals'].rolling(window=5, min_periods=1).mean().reset_index(0, drop=True)
     df['Rolling_AwayGoals'] = df.groupby('Away')['AwayGoals'].rolling(window=5, min_periods=1).mean().reset_index(0, drop=True)
@@ -37,4 +44,3 @@ if __name__ == "__main__":
     # Save engineered data
     save_engineered_data(df1_engineered, 'data/premier-league-matches-engineered.csv')
     save_engineered_data(df2_engineered, 'data/matches-2023-2024-engineered.csv')
-
