@@ -1,9 +1,10 @@
 import pandas as pd
 
-# Load the datasets
-old_matches_path = '/Users/ericiyen/mlapp/new-mlapp/premier-league-matches.csv'
-new_matches_path = '/Users/ericiyen/mlapp/new-mlapp/matches-2023-2024.csv'
+# Define relative paths for the datasets
+old_matches_path = 'data/premier-league-matches.csv'
+new_matches_path = 'data/matches-2023-2024.csv'
 
+# Load the datasets
 old_matches = pd.read_csv(old_matches_path)
 new_matches = pd.read_csv(new_matches_path)
 
@@ -38,7 +39,7 @@ sample = new_matches[['Date', 'Venue', 'Opponent', 'Result', 'Target']].sample(s
 print("Sample of Mapped Data:")
 print(sample)
 
-# Validation complete, save the mapped data
-mapped_data_path = '/Users/ericiyen/mlapp/new-mlapp/mapped_matches_2023_2024.csv'
+# Save the mapped data to a CSV file in the data directory
+mapped_data_path = 'data/mapped_matches_2023_2024.csv'
 new_matches.to_csv(mapped_data_path, index=False)
 print(f"Mapped data saved to {mapped_data_path}")
