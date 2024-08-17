@@ -8,10 +8,6 @@ new_matches_path = 'data/matches-2023-2024.csv'
 old_matches = pd.read_csv(old_matches_path)
 new_matches = pd.read_csv(new_matches_path)
 
-# Check columns in each dataset
-print("Columns in old_matches:", old_matches.columns)
-print("Columns in new_matches:", new_matches.columns)
-
 # Step 1: Create the "Target" column in both datasets
 def map_ftr_to_target(ftr):
     if ftr == 'H':
@@ -33,13 +29,11 @@ def map_result_to_target(row):
 
 new_matches['Target'] = new_matches.apply(map_result_to_target, axis=1)
 
-# Display a sample to confirm the mapping
-sample_size = 10
-sample = new_matches[['Date', 'Venue', 'Opponent', 'Result', 'Target']].sample(sample_size)
-print("Sample of Mapped Data:")
-print(sample)
+# Save the mapped data to CSV files with expected filenames
+old_cleaned_data_path = 'data/premier-league-matches-cleaned.csv'
+new_cleaned_data_path = 'data/matches-2023-2024-cleaned.csv'
+old_matches.to_csv(old_cleaned_data_path, index=False)
+new_matches.to_csv(new_cleaned_data_path, index=False)
 
-# Save the mapped data to a CSV file in the data directory
-mapped_data_path = 'data/mapped_matches_2023_2024.csv'
-new_matches.to_csv(mapped_data_path, index=False)
-print(f"Mapped data saved to {mapped_data_path}")
+print(f"Old matches cleaned data saved to {old_cleaned_data_path}")
+print(f"New matches cleaned data saved to {new_cleaned_data_path}")
