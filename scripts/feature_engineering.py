@@ -6,7 +6,7 @@ def load_cleaned_data(file_path):
 
 def engineer_features(df, is_old_data=True):
     """Engineer new features for the dataset."""
-    # (Feature engineering logic here...)
+    # Your feature engineering logic here
     return df
 
 def save_engineered_data(df, output_path):
@@ -14,7 +14,7 @@ def save_engineered_data(df, output_path):
     df.to_csv(output_path, index=False)
 
 if __name__ == "__main__":
-    # Load the cleaned data using the correct filenames
+    # Load the correct file
     df1_clean = load_cleaned_data('data/mapped_matches_2023_2024.csv')
     df2_clean = load_cleaned_data('data/matches-2023-2024-cleaned.csv')
 
