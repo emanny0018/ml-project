@@ -1,27 +1,37 @@
 import pandas as pd
 
-def load_cleaned_data(file_path):
-    """Load cleaned dataset."""
-    return pd.read_csv(file_path)
+def load_data():
+    # Load preprocessed datasets
+    old_matches = pd.read_csv('data/preprocessed_old_matches.csv')
+    new_matches = pd.read_csv('data/preprocessed_new_matches.csv')
+    return old_matches, new_matches
 
-def engineer_features(df, is_old_data=True):
-    """Engineer new features for the dataset."""
-    # Your feature engineering logic here
+def add_features(df):
+    df["Venue_Code"] = df["Home"].astype("category").cat.codes
+    df["Opp_Code"] = df["Away"].astype("category").cat.codes
+    df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
+    df["Rolling_HomeGoals"] = df.groupby("Home")["HomeGoals"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+    df["Rolling_AwayGoals"] = df.groupby("Away")["AwayGoals"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+    df["Venue_Opp_Interaction"] = df["Venue_Code"] * df["Opp_Code"]
+    df["Decayed_Rolling_HomeGoals"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
+    df["Decayed_Rolling_AwayGoals"] = df.groupby('Away')['AwayGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
+    df["Home_Advantage"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.rolling(5).mean()) - df.groupby('Away')['AwayGoals'].transform(lambda x: x.rolling(5).mean())
+    
     return df
 
-def save_engineered_data(df, output_path):
-    """Save the dataset with engineered features."""
-    df.to_csv(output_path, index=False)
+def apply_feature_engineering():
+    # Load the data
+    old_matches, new_matches = load_data()
+
+    # Add features
+    old_matches = add_features(old_matches)
+    new_matches = add_features(new_matches)
+
+    # Save feature-engineered data
+    old_matches.to_csv('data/fe_old_matches.csv', index=False)
+    new_matches.to_csv('data/fe_new_matches.csv', index=False)
+
+    print("Feature engineering completed successfully.")
 
 if __name__ == "__main__":
-    # Load the correct file
-    df1_clean = load_cleaned_data('data/mapped_matches_2023_2024.csv')
-    df2_clean = load_cleaned_data('data/matches-2023-2024-cleaned.csv')
-
-    # Engineer features
-    df1_engineered = engineer_features(df1_clean, is_old_data=True)
-    df2_engineered = engineer_features(df2_clean, is_old_data=False)
-
-    # Save engineered data
-    save_engineered_data(df1_engineered, 'data/premier-league-matches-engineered.csv')
-    save_engineered_data(df2_engineered, 'data/matches-2023-2024-engineered.csv')
+    apply_feature_engineering()
