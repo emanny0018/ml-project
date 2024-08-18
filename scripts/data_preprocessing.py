@@ -1,52 +1,33 @@
 import pandas as pd
-import os
 
-def map_ftr_to_target(df):
-    if 'FTR' in df.columns:
-        df['Target'] = df['FTR'].map({'H': 0, 'A': 1, 'D': 2})
-    elif 'Result' in df.columns:
-        df['Target'] = df['Result'].map({'W': 0, 'L': 1, 'D': 2})
-    else:
-        raise ValueError("Neither 'FTR' nor 'Result' columns found in the dataset.")
+def add_features(df):
+    df["Venue_Code"] = df["Home"].astype("category").cat.codes
+    df["Opp_Code"] = df["Away"].astype("category").cat.codes
+    df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
+    df["Rolling_HomeGoals"] = df.groupby("Home")["HomeGoals"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+    df["Rolling_AwayGoals"] = df.groupby("Away")["AwayGoals"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+    df["Venue_Opp_Interaction"] = df["Venue_Code"] * df["Opp_Code"]
+    df["Decayed_Rolling_HomeGoals"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
+    df["Decayed_Rolling_AwayGoals"] = df.groupby('Away')['AwayGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
+    df["Home_Advantage"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.rolling(5).mean()) - df.groupby('Away')['AwayGoals'].transform(lambda x: x.rolling(5).mean())
+    
     return df
 
-def load_and_preprocess_data():
-    # Load datasets
-    old_matches = pd.read_csv('data/premier-league-matches.csv')
-    new_matches = pd.read_csv('data/mapped_matches_2023_2024.csv')
+def apply_feature_engineering():
+    # Load preprocessed datasets
+    old_matches = pd.read_csv('data/preprocessed_old_matches.csv')
+    new_matches = pd.read_csv('data/preprocessed_new_matches.csv')
 
-    # Map FTR/Result to Target
-    old_matches = map_ftr_to_target(old_matches)
-    new_matches = map_ftr_to_target(new_matches)
+    # Add features
+    old_matches = add_features(old_matches)
+    new_matches = add_features(new_matches)
 
-    # Ensure data directory exists
-    if not os.path.exists('data'):
-        os.makedirs('data')
-
-    # Save preprocessed data
-    old_matches.to_csv('data/preprocessed_old_matches.csv', index=False)
-    new_matches.to_csv('data/preprocessed_new_matches.csv', index=False)
-
-    # Confirm files were saved
-    print("Preprocessed data saved:")
-    print(" - preprocessed_old_matches.csv saved in 'data/' directory.")
-    print(" - preprocessed_new_matches.csv saved in 'data/' directory.")
-
-    # Check if files exist
-    if os.path.exists('data/preprocessed_old_matches.csv') and os.path.exists('data/preprocessed_new_matches.csv'):
-        print("Files saved successfully.")
-    else:
-        print("Error: Files were not saved.")
+    # Save feature-engineered data
+    old_matches.to_csv('data/fe_old_matches.csv', index=False)
+    new_matches.to_csv('data/fe_new_matches.csv', index=False)
 
     return old_matches, new_matches
 
 if __name__ == "__main__":
-    old_matches, new_matches = load_and_preprocess_data()
-    print("Data preprocessing completed.")
-
-    # Display the first few rows for verification
-    print("\nFirst few rows of old_matches with 'Target' column:")
-    print(old_matches[['FTR', 'Target']].head(20))
-
-    print("\nFirst few rows of new_matches with 'Target' column:")
-    print(new_matches[['Result', 'Target']].head(20))
+    old_matches, new_matches = apply_feature_engineering()
+    print("Feature engineering completed.")
