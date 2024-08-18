@@ -1,19 +1,13 @@
 import pandas as pd
+import os
 
-# Function to map 'Result' in new_matches to 'Target'
-def map_result_to_target(df):
-    if 'Result' in df.columns:
-        df['Target'] = df['Result'].map({'W': 0, 'L': 1, 'D': 2})
-    else:
-        print("'Result' column is missing. 'Target' column will not be created.")
-    return df
-
-# Function to map 'FTR' in old_matches to 'Target'
 def map_ftr_to_target(df):
     if 'FTR' in df.columns:
         df['Target'] = df['FTR'].map({'H': 0, 'A': 1, 'D': 2})
+    elif 'Result' in df.columns:
+        df['Target'] = df['Result'].map({'W': 0, 'L': 1, 'D': 2})
     else:
-        print("'FTR' column is missing. 'Target' column will not be created.")
+        raise ValueError("Neither 'FTR' nor 'Result' columns found in the dataset.")
     return df
 
 def load_and_preprocess_data():
@@ -21,13 +15,28 @@ def load_and_preprocess_data():
     old_matches = pd.read_csv('data/premier-league-matches.csv')
     new_matches = pd.read_csv('data/mapped_matches_2023_2024.csv')
 
-    # Apply the mapping functions
+    # Map FTR/Result to Target
     old_matches = map_ftr_to_target(old_matches)
-    new_matches = map_result_to_target(new_matches)
+    new_matches = map_ftr_to_target(new_matches)
+
+    # Ensure data directory exists
+    if not os.path.exists('data'):
+        os.makedirs('data')
 
     # Save preprocessed data
     old_matches.to_csv('data/preprocessed_old_matches.csv', index=False)
     new_matches.to_csv('data/preprocessed_new_matches.csv', index=False)
+
+    # Confirm files were saved
+    print("Preprocessed data saved:")
+    print(" - preprocessed_old_matches.csv saved in 'data/' directory.")
+    print(" - preprocessed_new_matches.csv saved in 'data/' directory.")
+
+    # Check if files exist
+    if os.path.exists('data/preprocessed_old_matches.csv') and os.path.exists('data/preprocessed_new_matches.csv'):
+        print("Files saved successfully.")
+    else:
+        print("Error: Files were not saved.")
 
     return old_matches, new_matches
 
