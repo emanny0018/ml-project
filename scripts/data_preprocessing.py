@@ -11,16 +11,16 @@ def map_ftr_to_target(df):
 
 def load_and_preprocess_data():
     # Load datasets
-    old_matches = pd.read_csv('/Users/ericiyen/mlapp/new-mlapp/premier-league-matches.csv')
-    new_matches = pd.read_csv('/Users/ericiyen/mlapp/new-mlapp/mapped_matches_2023_2024.csv')
+    old_matches = pd.read_csv('data/premier-league-matches.csv')
+    new_matches = pd.read_csv('data/mapped_matches_2023_2024.csv')
 
     # Map FTR/Result to Target
     old_matches = map_ftr_to_target(old_matches)
     new_matches = map_ftr_to_target(new_matches)
 
     # Save preprocessed data
-    old_matches.to_csv('/Users/ericiyen/mlapp/new-mlapp/preprocessed_old_matches.csv', index=False)
-    new_matches.to_csv('/Users/ericiyen/mlapp/new-mlapp/preprocessed_new_matches.csv', index=False)
+    old_matches.to_csv('data/preprocessed_old_matches.csv', index=False)
+    new_matches.to_csv('data/preprocessed_new_matches.csv', index=False)
 
     return old_matches, new_matches
 
