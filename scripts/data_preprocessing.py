@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 # Function to map 'Result' in new_matches to 'Target'
 def map_result_to_target(df):
@@ -25,9 +26,19 @@ def load_and_preprocess_data():
     old_matches = map_ftr_to_target(old_matches)
     new_matches = map_result_to_target(new_matches)
 
+    # Ensure the 'data' directory exists
+    if not os.path.exists('data'):
+        os.makedirs('data')
+
     # Save preprocessed data
     old_matches.to_csv('data/preprocessed_old_matches.csv', index=False)
     new_matches.to_csv('data/preprocessed_new_matches.csv', index=False)
+
+    # Confirm the files were saved
+    if os.path.exists('data/preprocessed_old_matches.csv') and os.path.exists('data/preprocessed_new_matches.csv'):
+        print("Preprocessed data saved successfully.")
+    else:
+        print("Error: Preprocessed data was not saved.")
 
     return old_matches, new_matches
 
