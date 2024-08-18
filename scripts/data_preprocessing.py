@@ -1,35 +1,36 @@
 import pandas as pd
 
-# Paths for input and output files
-old_matches_path = 'data/premier-league-matches.csv'
-new_matches_path = 'data/matches-2023-2024.csv'
-mapped_data_path = 'data/mapped_matches_2023_2024.csv'
-
-# Load the datasets
-old_matches = pd.read_csv(old_matches_path)
-new_matches = pd.read_csv(new_matches_path)
-
-# Map the results to target values
-def map_ftr_to_target(ftr):
-    if ftr == 'H':
-        return 0
-    elif ftr == 'A':
-        return 1
+def map_ftr_to_target(df):
+    if 'FTR' in df.columns:
+        df['Target'] = df['FTR'].map({'H': 0, 'A': 1, 'D': 2})
+    elif 'Result' in df.columns:
+        df['Target'] = df['Result'].map({'W': 0, 'L': 1, 'D': 2})
     else:
-        return 2  # Draws
+        raise ValueError("Neither 'FTR' nor 'Result' columns found in the dataset.")
+    return df
 
-old_matches['Target'] = old_matches['FTR'].map(map_ftr_to_target)
+def load_and_preprocess_data():
+    # Load datasets
+    old_matches = pd.read_csv('/Users/ericiyen/mlapp/new-mlapp/premier-league-matches.csv')
+    new_matches = pd.read_csv('/Users/ericiyen/mlapp/new-mlapp/mapped_matches_2023_2024.csv')
 
-def map_result_to_target(row):
-    if row['Result'] == 'W':
-        return 0 if row['Venue'] == "Home" else 1
-    elif row['Result'] == 'L':
-        return 1 if row['Venue'] == "Home" else 0
-    else:
-        return 2  # Draws
+    # Map FTR/Result to Target
+    old_matches = map_ftr_to_target(old_matches)
+    new_matches = map_ftr_to_target(new_matches)
 
-new_matches['Target'] = new_matches.apply(map_result_to_target, axis=1)
+    # Save preprocessed data
+    old_matches.to_csv('/Users/ericiyen/mlapp/new-mlapp/preprocessed_old_matches.csv', index=False)
+    new_matches.to_csv('/Users/ericiyen/mlapp/new-mlapp/preprocessed_new_matches.csv', index=False)
 
-# Save the mapped data to the specified path
-new_matches.to_csv(mapped_data_path, index=False)
-print(f"Mapped data saved to {mapped_data_path}")
+    return old_matches, new_matches
+
+if __name__ == "__main__":
+    old_matches, new_matches = load_and_preprocess_data()
+    print("Data preprocessing completed.")
+
+    # Display the first few rows for verification
+    print("\nFirst few rows of old_matches with 'Target' column:")
+    print(old_matches[['FTR', 'Target']].head(20))
+
+    print("\nFirst few rows of new_matches with 'Target' column:")
+    print(new_matches[['Result', 'Target']].head(20))
