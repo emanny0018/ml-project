@@ -1,10 +1,12 @@
 import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+import joblib
+import os
 
 # Load the feature-engineered datasets
 train = pd.read_csv('data/fe_old_matches.csv')
@@ -63,6 +65,11 @@ voting_classifier = VotingClassifier(
 # Fit the ensemble model
 voting_classifier.fit(train[advanced_predictors], train["Target"])
 
+# Cross-validation to check for overfitting
+cv_scores = cross_val_score(voting_classifier, train[advanced_predictors], train["Target"], cv=5, scoring='accuracy')
+print(f"Cross-Validation Accuracy Scores: {cv_scores}")
+print(f"Mean Cross-Validation Accuracy: {cv_scores.mean()}")
+
 # Make predictions on the test set
 test_predictions = voting_classifier.predict(test[advanced_predictors])
 
@@ -71,12 +78,15 @@ accuracy = accuracy_score(test["Target"], test_predictions)
 accuracy_percentage = accuracy * 100
 
 # Output results
-print(f"Accuracy: {accuracy_percentage:.2f}%")
+print(f"Test Set Accuracy: {accuracy_percentage:.2f}%")
 print("Confusion Matrix:")
 print(confusion_matrix(test["Target"], test_predictions))
 print("Classification Report:")
 print(classification_report(test["Target"], test_predictions))
 
-# Optionally, save the model (uncomment if needed)
-# import joblib
-# joblib.dump(voting_classifier, 'models/voting_classifier.pkl')
+# Save the model to a file
+if not os.path.exists('models'):
+    os.makedirs('models')
+model_path = 'models/voting_classifier.pkl'
+joblib.dump(voting_classifier, model_path)
+print(f"Model saved to {model_path}")
