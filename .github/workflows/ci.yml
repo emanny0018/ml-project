@@ -55,5 +55,11 @@ jobs:
         name: prediction_model
         path: |
           data/voting_classifier.pkl
+
+    - name: Set environment variables for prediction
+      run: |
+        echo "HOME_TEAM=chelsea" >> $GITHUB_ENV
+        echo "AWAY_TEAM=manchester united" >> $GITHUB_ENV
+
     - name: Run prediction
       run: python scripts/predict_match.py
