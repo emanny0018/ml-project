@@ -85,8 +85,8 @@ print("Classification Report:")
 print(classification_report(test["Target"], test_predictions))
 
 # Save the model to a file
-if not os.path.exists('models'):
-    os.makedirs('models')
-model_path = 'models/voting_classifier.pkl'
+if not os.path.exists('data'):
+    os.makedirs('data')
+model_path = 'data/voting_classifier.pkl'
 joblib.dump(voting_classifier, model_path)
 print(f"Model saved to {model_path}")
