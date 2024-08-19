@@ -4,14 +4,13 @@ from joblib import load
 
 # Load the test data and trained model
 test = pd.read_csv('data/matches-2023-2024-engineered.csv')
-model = load('models/model.pkl')
+model = load('models/voting_classifier.pkl')
 
-# Define predictors
+# Define predictors based on your feature engineering process
 advanced_predictors = [
     "Venue_Code", "Opp_Code", "Day_Code", "Rolling_HomeGoals", "Rolling_AwayGoals", 
-    "Venue_Opp_Interaction", "Recent_Form_Home", "Recent_Form_Away", 
-    "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", "Home_Advantage",
-    'Home_Streak_Wins', 'Away_Streak_Losses'
+    "Venue_Opp_Interaction", "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
+    "Home_Advantage", "Home_Streak_Wins", "Away_Streak_Losses"
 ]
 
 # Make predictions on the test set
@@ -27,4 +26,3 @@ print("Confusion Matrix:")
 print(confusion_matrix(test["Target"], test_predictions))
 print("Classification Report:")
 print(classification_report(test["Target"], test_predictions))
-
