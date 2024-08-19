@@ -1,7 +1,8 @@
 import pandas as pd
 
-def add_features(df):
-    if 'Home' in df.columns and 'Away' in df.columns:
+def add_features(df, dataset_type):
+    if dataset_type == 'old':
+        # Handling old_matches
         df["Venue_Code"] = df["Home"].astype("category").cat.codes
         df["Opp_Code"] = df["Away"].astype("category").cat.codes
         df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
@@ -11,9 +12,23 @@ def add_features(df):
         df["Decayed_Rolling_HomeGoals"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
         df["Decayed_Rolling_AwayGoals"] = df.groupby('Away')['AwayGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
         df["Home_Advantage"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.rolling(5).mean()) - df.groupby('Away')['AwayGoals'].transform(lambda x: x.rolling(5).mean())
+    
+    elif dataset_type == 'new':
+        # Handling new_matches
+        df["Venue_Code"] = df["Venue"].astype("category").cat.codes
+        df["Team_Code"] = df["Team"].astype("category").cat.codes
+        df["Opponent_Code"] = df["Opponent"].astype("category").cat.codes
+        df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
+        df["Rolling_GF"] = df.groupby("Team")["GF"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+        df["Rolling_GA"] = df.groupby("Team")["GA"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+        df["Venue_Opp_Interaction"] = df["Venue_Code"] * df["Opponent_Code"]
+        df["Decayed_Rolling_GF"] = df.groupby('Team')['GF'].transform(lambda x: x.ewm(alpha=0.9).mean())
+        df["Decayed_Rolling_GA"] = df.groupby('Team')['GA'].transform(lambda x: x.ewm(alpha=0.9).mean())
+        df["Team_Advantage"] = df.groupby('Team')['GF'].transform(lambda x: x.rolling(5).mean()) - df.groupby('Opponent')['GA'].transform(lambda x: x.rolling(5).mean())
+    
     else:
-        print("The required columns 'Home' and 'Away' are missing in the DataFrame.")
-        print(f"Available columns: {df.columns.tolist()}")
+        print("Invalid dataset type provided.")
+    
     return df
 
 def apply_feature_engineering():
@@ -21,16 +36,9 @@ def apply_feature_engineering():
     old_matches = pd.read_csv('data/preprocessed_old_matches.csv')
     new_matches = pd.read_csv('data/preprocessed_new_matches.csv')
 
-    # Print the column names to debug
-    print("Columns in old_matches:")
-    print(old_matches.columns.tolist())
-    
-    print("Columns in new_matches:")
-    print(new_matches.columns.tolist())
-
     # Add features
-    old_matches = add_features(old_matches)
-    new_matches = add_features(new_matches)
+    old_matches = add_features(old_matches, 'old')
+    new_matches = add_features(new_matches, 'new')
 
     # Save the feature-engineered data
     old_matches.to_csv('data/fe_old_matches.csv', index=False)
