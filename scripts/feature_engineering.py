@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 
 def add_features(df, dataset_type):
     if dataset_type == 'old':
@@ -40,8 +41,8 @@ def apply_feature_engineering():
     old_matches = add_features(old_matches, 'old')
     new_matches = add_features(new_matches, 'new')
 
-    # Align columns for consistency between old and new datasets
-    aligned_new_matches = new_matches.rename(columns={
+    # Rename new_matches columns to match old_matches
+    new_matches.rename(columns={
         "Team_Code": "Venue_Code", 
         "Opponent_Code": "Opp_Code", 
         "Rolling_GF": "Rolling_HomeGoals", 
@@ -49,14 +50,19 @@ def apply_feature_engineering():
         "Decayed_Rolling_GF": "Decayed_Rolling_HomeGoals", 
         "Decayed_Rolling_GA": "Decayed_Rolling_AwayGoals", 
         "Team_Advantage": "Home_Advantage"
-    })
+    }, inplace=True)
 
     # Ensure both datasets have the same columns for modeling
-    aligned_new_matches = aligned_new_matches[old_matches.columns]
+    missing_cols = [col for col in old_matches.columns if col not in new_matches.columns]
+    for col in missing_cols:
+        new_matches[col] = np.nan
+
+    # Align columns in the same order as old_matches
+    new_matches = new_matches[old_matches.columns]
 
     # Save the feature-engineered data
     old_matches.to_csv('data/fe_old_matches.csv', index=False)
-    aligned_new_matches.to_csv('data/fe_new_matches.csv', index=False)
+    new_matches.to_csv('data/fe_new_matches.csv', index=False)
 
     print("Feature engineering completed and files saved.")
 
