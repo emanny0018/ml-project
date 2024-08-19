@@ -7,6 +7,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 import joblib
 import os
+from sklearn.utils import resample
+import numpy as np
 
 # Load the feature-engineered datasets
 train = pd.read_csv('data/fe_old_matches.csv')
@@ -69,6 +71,26 @@ voting_classifier.fit(train[advanced_predictors], train["Target"])
 cv_scores = cross_val_score(voting_classifier, train[advanced_predictors], train["Target"], cv=5, scoring='accuracy')
 print(f"Cross-Validation Accuracy Scores: {cv_scores}")
 print(f"Mean Cross-Validation Accuracy: {cv_scores.mean()}")
+
+# Bootstrapping for extra validation
+n_iterations = 100
+bootstrapped_scores = []
+
+for i in range(n_iterations):
+    # Create a bootstrap sample
+    train_bootstrap = resample(train, n_samples=len(train), replace=True, random_state=i)
+    
+    # Train the model on the bootstrap sample
+    voting_classifier.fit(train_bootstrap[advanced_predictors], train_bootstrap["Target"])
+    
+    # Evaluate on the original training set or a validation set
+    bootstrapped_accuracy = accuracy_score(train["Target"], voting_classifier.predict(train[advanced_predictors]))
+    bootstrapped_scores.append(bootstrapped_accuracy)
+
+# Output the bootstrapping results
+print(f"Bootstrapped Accuracy Scores: {bootstrapped_scores}")
+print(f"Mean Bootstrapped Accuracy: {np.mean(bootstrapped_scores):.4f}")
+print(f"Standard Deviation of Bootstrapped Accuracy: {np.std(bootstrapped_scores):.4f}")
 
 # Make predictions on the test set
 test_predictions = voting_classifier.predict(test[advanced_predictors])
