@@ -56,4 +56,4 @@ jobs:
         path: |
           models/*.pkl
     - name: Run prediction
-      run: python scripts/prediction.py      
+      run: python scripts/predict_match.py
