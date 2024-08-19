@@ -8,9 +8,13 @@ def load_data(file_path):
 
 def get_match_features(df, home_team, away_team):
     """Extract features for a specific match."""
+    print(f"Looking for match: {home_team} vs {away_team}")
     match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
+    print(match)
+    
     if match.empty:
         raise ValueError("Match not found in the dataset. Please check the team names.")
+    
     return match.iloc[0]
 
 def compare_team_matches(old_df, new_df, home_team, away_team):
@@ -46,10 +50,16 @@ if __name__ == "__main__":
     old_df = load_data('data/fe_old_matches.csv')
     new_df = load_data('data/fe_new_matches.csv')
 
-    # Print available teams to avoid mismatches
-    print("Available teams for input:")
-    available_teams = sorted(new_df['Home'].unique())
-    for team in available_teams:
+    # Print available teams from fe_old_matches.csv
+    print("Available teams from old matches for input:")
+    available_old_teams = sorted(old_df['Home'].unique())
+    for team in available_old_teams:
+        print(f"  - {team}")
+
+    # Print available teams from fe_new_matches.csv
+    print("Available teams from new matches for input:")
+    available_new_teams = sorted(new_df['Home'].unique())
+    for team in available_new_teams:
         print(f"  - {team}")
 
     # Get inputs from environment variables
