@@ -56,7 +56,7 @@ jobs:
         path: |
           data/voting_classifier.pkl
 
-    - name: Set environment variables for prediction
+    - name: Set Environment Variables
       run: |
         echo "HOME_TEAM=manchester utd" >> $GITHUB_ENV
         echo "AWAY_TEAM=fulham" >> $GITHUB_ENV
