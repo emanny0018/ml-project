@@ -1,7 +1,6 @@
-import pandas as pd
 import os
+import pandas as pd
 
-# Function to map 'Result' in new_matches to 'Target'
 def map_result_to_target(df):
     if 'Result' in df.columns:
         df['Target'] = df['Result'].map({'W': 0, 'L': 1, 'D': 2})
@@ -9,7 +8,6 @@ def map_result_to_target(df):
         print("'Result' column is missing. 'Target' column will not be created.")
     return df
 
-# Function to map 'FTR' in old_matches to 'Target'
 def map_ftr_to_target(df):
     if 'FTR' in df.columns:
         df['Target'] = df['FTR'].map({'H': 0, 'A': 1, 'D': 2})
@@ -27,24 +25,17 @@ def load_and_preprocess_data():
     new_matches = map_result_to_target(new_matches)
 
     # Ensure the 'data' directory exists
-    if not os.path.exists('data'):
-        os.makedirs('data')
+    os.makedirs('data', exist_ok=True)
 
     # Save preprocessed data
     old_matches.to_csv('data/preprocessed_old_matches.csv', index=False)
     new_matches.to_csv('data/preprocessed_new_matches.csv', index=False)
 
-    # Confirm the files were saved
-    if os.path.exists('data/preprocessed_old_matches.csv') and os.path.exists('data/preprocessed_new_matches.csv'):
-        print("Preprocessed data saved successfully.")
-    else:
-        print("Error: Preprocessed data was not saved.")
-
+    print("Preprocessed data saved successfully.")
     return old_matches, new_matches
 
 if __name__ == "__main__":
     old_matches, new_matches = load_and_preprocess_data()
-    print("Data preprocessing completed.")
 
     # Display the first few rows for verification
     print("\nFirst few rows of old_matches with 'Target' column:")
