@@ -38,6 +38,11 @@ def apply_feature_engineering():
     old_matches = add_features(old_matches, 'old')
     new_matches = add_features(new_matches, 'new')
 
+    # Ensure that the test dataset includes the same columns as the training dataset
+    missing_cols = set(old_matches.columns) - set(new_matches.columns)
+    for col in missing_cols:
+        new_matches[col] = 0  # or np.nan, or some other default value
+
     # Save the feature-engineered data
     old_matches.to_csv('data/fe_old_matches.csv', index=False)
     new_matches.to_csv('data/fe_new_matches.csv', index=False)
