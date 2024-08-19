@@ -3,6 +3,8 @@ from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.model_selection import GridSearchCV
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
 
 # Load the feature-engineered datasets
 train = pd.read_csv('data/fe_old_matches.csv')
@@ -15,22 +17,27 @@ advanced_predictors = [
     "Home_Advantage", "Home_Streak_Wins", "Away_Streak_Losses"
 ]
 
-# Define a parameter grid for XGBoost
-param_grid_xgb = {
-    'n_estimators': [100, 200, 300],
-    'learning_rate': [0.05, 0.1, 0.2],
-    'max_depth': [3, 5, 7],
-    'min_child_weight': [1, 3],
-    'subsample': [0.8, 1.0],
-    'colsample_bytree': [0.8, 1.0],
-}
+# Define an imputer to handle NaN values
+imputer = SimpleImputer(strategy='mean')
 
-# Initialize XGBoost classifier
-xgb_classifier = XGBClassifier(random_state=42)
+# XGBoost pipeline
+xgb_pipeline = Pipeline(steps=[
+    ('imputer', imputer),
+    ('classifier', XGBClassifier(random_state=42))
+])
 
 # Perform GridSearchCV with 3-fold cross-validation for XGBoost
+param_grid_xgb = {
+    'classifier__n_estimators': [100, 200, 300],
+    'classifier__learning_rate': [0.05, 0.1, 0.2],
+    'classifier__max_depth': [3, 5, 7],
+    'classifier__min_child_weight': [1, 3],
+    'classifier__subsample': [0.8, 1.0],
+    'classifier__colsample_bytree': [0.8, 1.0],
+}
+
 grid_search_xgb = GridSearchCV(
-    estimator=xgb_classifier,
+    estimator=xgb_pipeline,
     param_grid=param_grid_xgb,
     cv=3,
     scoring='accuracy',
@@ -41,12 +48,15 @@ grid_search_xgb = GridSearchCV(
 grid_search_xgb.fit(train[advanced_predictors], train["Target"])
 best_xgb_classifier = grid_search_xgb.best_estimator_
 
-# Initialize RandomForest classifier
-rf_classifier = RandomForestClassifier(random_state=42, n_estimators=200, max_depth=7)
+# RandomForest pipeline
+rf_pipeline = Pipeline(steps=[
+    ('imputer', imputer),
+    ('classifier', RandomForestClassifier(random_state=42, n_estimators=200, max_depth=7))
+])
 
 # Ensemble using Voting Classifier
 voting_classifier = VotingClassifier(
-    estimators=[('xgb', best_xgb_classifier), ('rf', rf_classifier)],
+    estimators=[('xgb', best_xgb_classifier), ('rf', rf_pipeline)],
     voting='soft'
 )
 
