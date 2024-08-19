@@ -1,44 +1,59 @@
 import pandas as pd
+from sklearn.ensemble import VotingClassifier, HistGradientBoostingClassifier
 from xgboost import XGBClassifier
-from sklearn.ensemble import RandomForestClassifier, VotingClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
+from sklearn.impute import SimpleImputer
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
 
-# Load feature-engineered datasets
-train = pd.read_csv('data/fe_old_matches.csv')
-test = pd.read_csv('data/fe_new_matches.csv')
-
-# Define predictors
-predictors = [
-    "Venue_Code", "Opp_Code", "Day_Code", "Rolling_HomeGoals", 
-    "Rolling_AwayGoals", "Venue_Opp_Interaction", 
-    "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
+# Define the predictors (adjust these based on your feature engineering)
+advanced_predictors = [
+    "Venue_Code", "Opp_Code", "Day_Code", "Rolling_HomeGoals", "Rolling_AwayGoals", 
+    "Venue_Opp_Interaction", "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
     "Home_Advantage"
 ]
 
-# Split train and validation sets from the old matches dataset
-X_train, X_val, y_train, y_val = train_test_split(
-    train[predictors], train["Target"], test_size=0.2, random_state=42
-)
+def train_models(train, test):
+    # Define a column transformer to handle missing values
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ('num', SimpleImputer(strategy='mean'), advanced_predictors)
+        ]
+    )
 
-# Initialize the models
-xgb = XGBClassifier(random_state=42)
-rf = RandomForestClassifier(random_state=42)
+    # Initialize models with pipelines that include the preprocessor
+    xgb_pipeline = Pipeline(steps=[('preprocessor', preprocessor),
+                                   ('classifier', XGBClassifier(random_state=42))])
+    
+    hist_gb_pipeline = Pipeline(steps=[('classifier', HistGradientBoostingClassifier(random_state=42))])
 
-# Combine them in a VotingClassifier
-voting_clf = VotingClassifier(
-    estimators=[('xgb', xgb), ('rf', rf)],
-    voting='soft'
-)
+    # Ensemble using Voting Classifier
+    voting_clf = VotingClassifier(
+        estimators=[('xgb', xgb_pipeline), ('hist_gb', hist_gb_pipeline)],
+        voting='soft'
+    )
 
-# Train the model
-voting_clf.fit(X_train, y_train)
+    # Train the ensemble model
+    voting_clf.fit(train[advanced_predictors], train["Target"])
 
-# Validate the model
-y_pred = voting_clf.predict(X_val)
-accuracy = accuracy_score(y_val, y_pred)
-print(f"Validation Accuracy: {accuracy:.2%}")
+    # Predict on test data
+    predictions = voting_clf.predict(test[advanced_predictors])
 
-# Save the trained model
-import joblib
-joblib.dump(voting_clf, 'models/voting_classifier.pkl')
+    # Evaluate the model
+    accuracy = accuracy_score(test["Target"], predictions)
+    print(f"Model Accuracy: {accuracy * 100:.2f}%")
+    print("Confusion Matrix:")
+    print(confusion_matrix(test["Target"], predictions))
+    print("Classification Report:")
+    print(classification_report(test["Target"], predictions))
+
+    return voting_clf
+
+if __name__ == "__main__":
+    # Load the feature-engineered datasets
+    train = pd.read_csv('data/fe_old_matches.csv')
+    test = pd.read_csv('data/fe_new_matches.csv')
+
+    # Train the models and evaluate
+    voting_clf = train_models(train, test)
