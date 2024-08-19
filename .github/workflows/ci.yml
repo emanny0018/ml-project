@@ -58,8 +58,10 @@ jobs:
 
     - name: Set environment variables for prediction
       run: |
-        echo "HOME_TEAM=chelsea" >> $GITHUB_ENV
-        echo "AWAY_TEAM=manchester united" >> $GITHUB_ENV
+        echo "HOME_TEAM=manchester utd" >> $GITHUB_ENV
+        echo "AWAY_TEAM=fulham" >> $GITHUB_ENV
+        echo "MATCH_DATE=2024-08-16" >> $GITHUB_ENV
+        echo "SEASON_END_YEAR=2025" >> $GITHUB_ENV
 
     - name: Run prediction
       run: python scripts/predict_match.py
