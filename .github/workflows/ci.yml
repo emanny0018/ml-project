@@ -1,6 +1,10 @@
-name: CI Pipeline
+name: CI
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   build:
@@ -20,19 +24,34 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Data Preprocessing
-      run: |
-        python scripts/data_preprocessing.py
+    - name: Run data preprocessing
+      run: python scripts/data_preprocessing.py
 
-    - name: Run Feature Engineering
-      run: |
-        python scripts/feature_engineering.py
+    - name: Upload preprocessed data
+      uses: actions/upload-artifact@v2
+      with:
+        name: preprocessed-data
+        path: |
+          data/preprocessed_old_matches.csv
+          data/preprocessed_new_matches.csv
 
-    - name: Run Model Training
-      run: |
-        python scripts/model_training.py
+    - name: Run feature engineering
+      run: python scripts/feature_engineering.py
 
-    - name: Run Tests
-      run: |
-        pip install pytest
-        pytest tests/
+    - name: Upload feature-engineered data
+      uses: actions/upload-artifact@v2
+      with:
+        name: feature-engineered-data
+        path: |
+          data/fe_old_matches.csv
+          data/fe_new_matches.csv
+
+    - name: Run model training
+      run: python scripts/model_training.py
+
+    - name: Upload trained model
+      uses: actions/upload-artifact@v2
+      with:
+        name: trained-model
+        path: |
+          models/*.pkl
