@@ -7,8 +7,7 @@ def load_data(file_path):
 
 def get_match_features(df, home_team, away_team):
     """Extract features for a specific match."""
-    # Example logic to get features for the specific match
-    # This assumes you have columns in your data that correspond to home/away teams and other features
+    # Extract the row that matches the home and away teams
     match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
     
     if match.empty:
@@ -18,14 +17,14 @@ def get_match_features(df, home_team, away_team):
 
 if __name__ == "__main__":
     # Load the trained model
-    model = load('models/model.pkl')
+    model = load('models/voting_classifier.pkl')
 
     # Load the engineered data (this should be the same data structure used during training)
     df = load_data('data/matches-2023-2024-engineered.csv')
 
     # Get user input for home and away teams
-    home_team = input("Enter Home Team: ")
-    away_team = input("Enter Away Team: ")
+    home_team = input("Enter Home Team: ").strip().lower()
+    away_team = input("Enter Away Team: ").strip().lower()
 
     # Extract features for the input match
     try:
@@ -37,9 +36,8 @@ if __name__ == "__main__":
     # Prepare features for prediction
     advanced_predictors = [
         "Venue_Code", "Opp_Code", "Day_Code", "Rolling_HomeGoals", "Rolling_AwayGoals", 
-        "Venue_Opp_Interaction", "Recent_Form_Home", "Recent_Form_Away", 
-        "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", "Home_Advantage",
-        'Home_Streak_Wins', 'Away_Streak_Losses'
+        "Venue_Opp_Interaction", "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
+        "Home_Advantage", 'Home_Streak_Wins', 'Away_Streak_Losses'
     ]
 
     # Select the relevant features from the match data
@@ -47,10 +45,11 @@ if __name__ == "__main__":
 
     # Predict the outcome
     prediction = model.predict(features)
+    predicted_home_goals = int(round(model.named_steps['rf'].predict(features)[0]))
+    predicted_away_goals = int(round(model.named_steps['xgb'].predict(features)[0]))
 
     # Interpret the result
     result_map = {0: "Home Win", 1: "Away Win", 2: "Draw"}
     result = result_map.get(prediction[0], "Unknown Result")
     
-    print(f"Predicted Outcome: {result}")
-
+    print(f"Predicted Outcome: {home_team.capitalize()} {predicted_home_goals}-{predicted_away_goals} {away_team.capitalize()} ({result})")
