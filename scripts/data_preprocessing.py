@@ -28,10 +28,23 @@ def load_and_preprocess_data():
     os.makedirs('data', exist_ok=True)
 
     # Save preprocessed data
-    old_matches.to_csv('data/preprocessed_old_matches.csv', index=False)
-    new_matches.to_csv('data/preprocessed_new_matches.csv', index=False)
+    old_matches_output_path = 'data/preprocessed_old_matches.csv'
+    new_matches_output_path = 'data/preprocessed_new_matches.csv'
+    
+    old_matches.to_csv(old_matches_output_path, index=False)
+    new_matches.to_csv(new_matches_output_path, index=False)
 
-    print("Preprocessed data saved successfully.")
+    # Check if files were saved correctly
+    if os.path.isfile(old_matches_output_path) and os.path.isfile(new_matches_output_path):
+        print("Preprocessed data saved successfully.")
+    else:
+        print("Error: Preprocessed data files were not saved.")
+
+    # List the contents of the data directory for confirmation
+    print("\nContents of 'data' directory after saving:")
+    for file_name in os.listdir('data'):
+        print(file_name)
+
     return old_matches, new_matches
 
 if __name__ == "__main__":
