@@ -55,5 +55,5 @@ jobs:
         name: trained-model
         path: |
           models/*.pkl
-    - name: Run model training and prediction
-      run: python scripts/model_training_and_prediction.py      
+    - name: Run prediction
+      run: python scripts/prediction.py      
