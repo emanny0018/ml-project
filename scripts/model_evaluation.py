@@ -3,8 +3,8 @@ from sklearn.metrics import accuracy_score, confusion_matrix, classification_rep
 from joblib import load
 
 # Load the test data and trained model
-test = pd.read_csv('data/matches-2023-2024-engineered.csv')
-model = load('models/voting_classifier.pkl')
+test = pd.read_csv('data/fe_new_matches.csv')
+model = load('data/voting_classifier.pkl')
 
 # Define predictors based on your feature engineering process
 advanced_predictors = [
