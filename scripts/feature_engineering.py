@@ -2,7 +2,6 @@ import pandas as pd
 
 def add_features(df, dataset_type):
     if dataset_type == 'old':
-        # Handling old_matches
         df["Venue_Code"] = df["Home"].astype("category").cat.codes
         df["Opp_Code"] = df["Away"].astype("category").cat.codes
         df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
@@ -14,7 +13,6 @@ def add_features(df, dataset_type):
         df["Home_Advantage"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.rolling(5).mean()) - df.groupby('Away')['AwayGoals'].transform(lambda x: x.rolling(5).mean())
     
     elif dataset_type == 'new':
-        # Handling new_matches
         df["Venue_Code"] = df["Venue"].astype("category").cat.codes
         df["Team_Code"] = df["Team"].astype("category").cat.codes
         df["Opponent_Code"] = df["Opponent"].astype("category").cat.codes
