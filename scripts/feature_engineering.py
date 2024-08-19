@@ -11,6 +11,8 @@ def add_features(df, dataset_type):
         df["Decayed_Rolling_HomeGoals"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
         df["Decayed_Rolling_AwayGoals"] = df.groupby('Away')['AwayGoals'].transform(lambda x: x.ewm(alpha=0.9).mean())
         df["Home_Advantage"] = df.groupby('Home')['HomeGoals'].transform(lambda x: x.rolling(5).mean()) - df.groupby('Away')['AwayGoals'].transform(lambda x: x.rolling(5).mean())
+        df['Home_Streak_Wins'] = df.groupby('Home')['Target'].transform(lambda x: (x == 0).rolling(window=5, min_periods=1).sum())
+        df['Away_Streak_Losses'] = df.groupby('Away')['Target'].transform(lambda x: (x == 1).rolling(window=5, min_periods=1).sum())
     
     elif dataset_type == 'new':
         df["Venue_Code"] = df["Venue"].astype("category").cat.codes
@@ -37,11 +39,6 @@ def apply_feature_engineering():
     # Add features
     old_matches = add_features(old_matches, 'old')
     new_matches = add_features(new_matches, 'new')
-
-    # Ensure that the test dataset includes the same columns as the training dataset
-    missing_cols = set(old_matches.columns) - set(new_matches.columns)
-    for col in missing_cols:
-        new_matches[col] = 0  # or np.nan, or some other default value
 
     # Save the feature-engineered data
     old_matches.to_csv('data/fe_old_matches.csv', index=False)
