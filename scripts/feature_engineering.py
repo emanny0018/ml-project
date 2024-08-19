@@ -29,7 +29,7 @@ def add_features(df, dataset_type):
     
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
-    
+
     return df
 
 def apply_feature_engineering():
