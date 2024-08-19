@@ -52,8 +52,8 @@ jobs:
     - name: Upload trained model
       uses: actions/upload-artifact@v2
       with:
-        name: trained-model
+        name: prediction_model
         path: |
-          models/*.pkl
+          data/voting_classifier.pkl
     - name: Run prediction
       run: python scripts/predict_match.py
