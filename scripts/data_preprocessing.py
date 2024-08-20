@@ -34,6 +34,10 @@ def load_and_preprocess_data():
     new_matches_renamed = new_matches.rename(columns={
         'Team': 'Home', 'Opponent': 'Away', 'GF': 'HomeGoals', 'GA': 'AwayGoals'})
 
+    # Ensure the 'Target' column is present
+    if 'Target' not in new_matches_renamed.columns:
+        new_matches_renamed['Target'] = None  # or handle it appropriately
+
     # Combine old and new matches for streak calculation
     combined_matches = pd.concat([old_matches, new_matches_renamed], ignore_index=True)
 
