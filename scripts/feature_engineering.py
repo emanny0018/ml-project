@@ -49,6 +49,10 @@ def add_features(df, dataset_type, old_streaks=None):
 
             df['Home_Streak_Wins'] = df['Team'].map(home_streak_mapping)
             df['Away_Streak_Losses'] = df['Opponent'].map(away_streak_mapping)
+
+            # Debug: Check the mapped values
+            print("\nNew matches with mapped streaks:")
+            print(df[['Team', 'Home_Streak_Wins', 'Opponent', 'Away_Streak_Losses']].head(20))
     
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
