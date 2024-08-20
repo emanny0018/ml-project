@@ -23,6 +23,10 @@ def apply_feature_engineering():
     # Add features
     combined_matches = add_features(combined_matches)
 
+    # Ensure 'Target' column is still present
+    if 'Target' not in combined_matches.columns:
+        raise ValueError("'Target' column is missing after feature engineering. Ensure it is correctly handled during preprocessing.")
+
     # Save the feature-engineered data
     combined_matches.to_csv('data/fe_combined_matches.csv', index=False)
 
