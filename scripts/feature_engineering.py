@@ -23,6 +23,8 @@ def add_features(df, dataset_type):
         df["Team_Code"] = df["Home"].astype("category").cat.codes
         df["Opponent_Code"] = df["Away"].astype("category").cat.codes
         df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
+        
+        # Calculate Rolling and Decayed Goals
         df["Rolling_GF"] = df.groupby("Home")["GF"].transform(lambda x: x.rolling(3, min_periods=1).mean())
         df["Rolling_GA"] = df.groupby("Away")["GA"].transform(lambda x: x.rolling(3, min_periods=1).mean())
         df["Venue_Opp_Interaction"] = df["Venue_Code"] * df["Opponent_Code"]
@@ -33,6 +35,13 @@ def add_features(df, dataset_type):
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
 
+    # Handle NaN values without filling with zeros
+    # If NaNs exist, it means there might not be enough data for certain calculations; investigate these cases instead of filling them
+    nan_columns = df.columns[df.isna().any()].tolist()
+    if nan_columns:
+        print(f"\nWarning: NaN values detected in columns: {nan_columns}")
+        print("Ensure that these are expected due to insufficient historical data, or investigate further.")
+
     return df
 
 def apply_feature_engineering():
@@ -40,11 +49,12 @@ def apply_feature_engineering():
     old_matches = pd.read_csv('data/preprocessed_old_matches.csv')
     new_matches = pd.read_csv('data/preprocessed_new_matches.csv')
 
+    # Calculate the week number for the new_matches
+    new_matches['Wk'] = pd.to_datetime(new_matches['Date']).dt.isocalendar().week
+    
     # Check if `Season_End_Year` and `Wk` are present in the new matches and correct them if missing
     if 'Season_End_Year' not in new_matches.columns:
         new_matches['Season_End_Year'] = 2024  # or the correct year if it's different
-    if 'Wk' not in new_matches.columns:
-        new_matches['Wk'] = np.nan  # Set to NaN or calculate accordingly
 
     # Ensure Home and Away columns are populated before applying feature engineering
     if 'Home' not in new_matches.columns or 'Away' not in new_matches.columns:
