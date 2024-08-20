@@ -43,10 +43,15 @@ def add_features(df, dataset_type, old_streaks=None):
         df['Away_Streak_Losses'] = np.nan
         
         if old_streaks is not None:
-            for team, streaks in old_streaks.items():
-                team_old_streaks = old_streaks.get(team, {})
-                df.loc[df['Team'] == team, 'Home_Streak_Wins'] = df.loc[df['Team'] == team, 'Home_Streak_Wins'].fillna(method='ffill').fillna(team_old_streaks.get('Home_Streak_Wins', 0))
-                df.loc[df['Team'] == team, 'Away_Streak_Losses'] = df.loc[df['Team'] == team, 'Away_Streak_Losses'].fillna(method='ffill').fillna(team_old_streaks.get('Away_Streak_Losses', 0))
+            for index, row in df.iterrows():
+                home_team = row['Team']
+                away_team = row['Opponent']
+                
+                if home_team in old_streaks:
+                    df.at[index, 'Home_Streak_Wins'] = old_streaks[home_team]['Home_Streak_Wins']
+                
+                if away_team in old_streaks:
+                    df.at[index, 'Away_Streak_Losses'] = old_streaks[away_team]['Away_Streak_Losses']
     
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
@@ -78,7 +83,7 @@ def apply_feature_engineering():
 
     # Display the first few rows for verification
     print("\nFirst few rows of new_matches after feature engineering:")
-    print(new_matches.head(20))
+    print(new_matches[['Team', 'Opponent', 'Home_Streak_Wins', 'Away_Streak_Losses']].head(20))
 
 if __name__ == "__main__":
     apply_feature_engineering()
