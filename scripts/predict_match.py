@@ -7,13 +7,12 @@ def load_data(file_path):
     """Load dataset from a file."""
     return pd.read_csv(file_path)
 
-def get_match_features(df, home_team, away_team, match_date, season_end_year):
+def get_match_features(df, home_team, away_team):
     """Extract features for a specific match."""
-    match = df[(df['Home'] == home_team) & (df['Away'] == away_team) & 
-               (df['Date'] == match_date) & (df['Season_End_Year'] == season_end_year)]
+    match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
     
     if match.empty:
-        raise ValueError("Match not found in the dataset. Please check the team names, date, and season end year.")
+        raise ValueError("Match not found in the dataset. Please check the team names.")
     
     return match.iloc[0]
 
@@ -66,17 +65,15 @@ if __name__ == "__main__":
     # Get inputs from environment variables
     home_team = os.getenv("HOME_TEAM", "").strip().lower()
     away_team = os.getenv("AWAY_TEAM", "").strip().lower()
-    match_date = os.getenv("MATCH_DATE", "").strip()
-    season_end_year = int(os.getenv("SEASON_END_YEAR", "").strip())
 
-    if not home_team or not away_team or not match_date or not season_end_year:
-        raise ValueError("Missing input. Ensure that HOME_TEAM, AWAY_TEAM, MATCH_DATE, and SEASON_END_YEAR are set.")
+    if not home_team or not away_team:
+        raise ValueError("Missing input. Ensure that HOME_TEAM and AWAY_TEAM are set.")
 
     # Compare past matches between the teams
     compare_team_matches(df, home_team, away_team)
 
     # Extract features for the prediction
-    features = get_match_features(df, home_team, away_team, match_date, season_end_year)
+    features = get_match_features(df, home_team, away_team)
 
     # Define predictors based on your feature engineering process
     advanced_predictors = [
