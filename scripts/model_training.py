@@ -5,6 +5,7 @@ from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_sp
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
+from sklearn.utils import resample
 import joblib
 import os
 import numpy as np
