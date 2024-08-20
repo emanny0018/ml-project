@@ -67,7 +67,7 @@ jobs:
     - name: Run match prediction
       run: |
         export HOME_TEAM="manchestercity"
-        export AWAY_TEAM="liverpool"
+        export AWAY_TEAM="fulham"
         python scripts/predict_match.py
 
     - name: Upload prediction results
