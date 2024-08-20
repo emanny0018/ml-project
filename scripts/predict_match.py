@@ -34,7 +34,7 @@ def compare_team_matches(df, home_team, away_team):
         away_team_name = match['Away'].capitalize()
         home_goals = match['HomeGoals']
         away_goals = match['AwayGoals']
-        actual_result = 'Home Win' if match.get('Target') == 0 else ('Away Win' if match.get('Target') == 1 else 'Draw')
+        actual_result = 'Home Win' if match['Target'] == 0 else ('Away Win' if match['Target'] == 1 else 'Draw')
 
         print(f"{match_date}: {home_team_name} {home_goals}-{away_goals} {away_team_name} (Actual: {actual_result})")
 
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     print(f"Predicted Result: {predicted_result}")
     print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
     
-    # Actual result from the dataset (to calculate accuracy)
+    # Actual result from the dataset (to calculate accuracy, if available)
     actual_result = 'Home Win' if features['Target'] == 0 else ('Away Win' if features['Target'] == 1 else 'Draw')
     
     # Calculate accuracy based on actual result
