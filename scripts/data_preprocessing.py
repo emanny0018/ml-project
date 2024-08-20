@@ -30,12 +30,13 @@ def load_and_preprocess_data():
     old_matches = map_ftr_to_target(old_matches)
     new_matches = map_result_to_target(new_matches)
 
-    # Combine old and new matches for streak calculation
+    # Rename columns in new matches to match the old dataset
     new_matches_renamed = new_matches.rename(columns={
         'Team': 'Home', 'Opponent': 'Away', 'GF': 'HomeGoals', 'GA': 'AwayGoals'})
-    
+
+    # Combine old and new matches for streak calculation
     combined_matches = pd.concat([old_matches, new_matches_renamed], ignore_index=True)
-    
+
     # Sort by date to ensure continuity
     combined_matches.sort_values('Date', inplace=True)
     
