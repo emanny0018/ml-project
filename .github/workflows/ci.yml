@@ -44,5 +44,4 @@ jobs:
       with:
         name: feature-engineered-data
         path: |
-          data/fe_old_matches.csv
-          data/fe_new_matches.csv
+          data/fe_combined_matches.csv
