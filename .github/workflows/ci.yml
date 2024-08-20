@@ -34,6 +34,7 @@ jobs:
         path: |
           data/preprocessed_old_matches.csv
           data/preprocessed_new_matches.csv
+          data/combined_matches.csv
 
     - name: Run feature engineering
       run: python scripts/feature_engineering.py
