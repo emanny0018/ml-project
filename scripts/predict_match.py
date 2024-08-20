@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 from joblib import load
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 
 def load_data(file_path):
     """Load dataset from a file."""
@@ -37,6 +38,13 @@ def compare_team_matches(df, home_team, away_team):
 
         print(f"{match_date}: {home_team_name} {home_goals}-{away_goals} {away_team_name} (Actual: {actual_result})")
 
+def display_available_teams(df):
+    """Display available teams in the dataset to avoid input errors."""
+    teams = sorted(df['Home'].unique())
+    print("\nAvailable teams in the dataset:")
+    for team in teams:
+        print(f"  - {team}")
+
 if __name__ == "__main__":
     # Load the trained model
     model_path = 'data/voting_classifier.pkl'
@@ -44,6 +52,9 @@ if __name__ == "__main__":
 
     # Load the engineered data
     df = load_data('data/fe_combined_matches.csv')
+
+    # Display available teams
+    display_available_teams(df)
 
     # Get inputs from environment variables
     home_team = os.getenv("HOME_TEAM", "").strip().lower()
@@ -70,10 +81,31 @@ if __name__ == "__main__":
 
     # Predict the outcome
     prediction = model.predict(features)
+    predicted_proba = model.predict_proba(features)
 
     # Interpret the result
     result_map = {0: "Home Win", 1: "Away Win", 2: "Draw"}
-    result = result_map.get(prediction[0], "Unknown Result")
+    predicted_result = result_map.get(prediction[0], "Unknown Result")
     
+    # Output the predicted result
     print(f"\nPredicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}")
-    print(f"Predicted Result: {result}")
+    print(f"Predicted Result: {predicted_result}")
+    print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
+    
+    # Actual result from the dataset (to calculate accuracy)
+    actual_result = 'Home Win' if features['FTR'] == 'H' else ('Away Win' if features['FTR'] == 'A' else 'Draw')
+    
+    # Calculate accuracy based on actual result
+    accuracy = accuracy_score([actual_result], [predicted_result])
+    print(f"Accuracy of Prediction: {accuracy:.2f}")
+
+    # Save the results
+    results_path = "data/prediction_results.txt"
+    with open(results_path, "w") as f:
+        f.write(f"Predicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}\n")
+        f.write(f"Predicted Result: {predicted_result}\n")
+        f.write(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}\n")
+        f.write(f"Actual Result: {actual_result}\n")
+        f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
+    
+    print(f"\nPrediction results saved to {results_path}.")
