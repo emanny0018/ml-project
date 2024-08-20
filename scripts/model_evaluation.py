@@ -24,6 +24,10 @@ test_predictions = model.predict(test[advanced_predictors])
 accuracy = accuracy_score(test["Target"], test_predictions)
 accuracy_percentage = accuracy * 100
 
+# Calculate confusion matrix and classification report
+conf_matrix = confusion_matrix(test["Target"], test_predictions)
+class_report = classification_report(test["Target"], test_predictions)
+
 # Save results to a CSV file
 results_df = pd.DataFrame({
     "Accuracy": [accuracy_percentage],
@@ -37,6 +41,6 @@ print("Evaluation results saved to 'data/evaluation_results.csv'")
 # Output results
 print(f"Accuracy: {accuracy_percentage:.2f}%")
 print("Confusion Matrix:")
-print(confusion_matrix(test["Target"], test_predictions))
+print(conf_matrix)
 print("Classification Report:")
-print(classification_report(test["Target"], test_predictions))
+print(class_report)
