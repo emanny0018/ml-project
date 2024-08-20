@@ -73,6 +73,10 @@ def apply_feature_engineering():
     # Align columns in the same order as old_matches
     new_matches = new_matches[old_matches.columns]
 
+    # Display the first few rows of new_matches to verify everything is populated correctly
+    print("\nFirst few rows of new_matches after feature engineering:")
+    print(new_matches.head(20))
+
     # Save the feature-engineered data
     old_matches.to_csv('data/fe_old_matches.csv', index=False)
     new_matches.to_csv('data/fe_new_matches.csv', index=False)
