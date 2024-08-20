@@ -1,13 +1,12 @@
 import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score
+from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
 import joblib
 import os
-from sklearn.utils import resample
 import numpy as np
 
 # Load the feature-engineered dataset
@@ -20,7 +19,7 @@ advanced_predictors = [
     "Home_Advantage", "Home_Streak_Wins", "Away_Streak_Losses"
 ]
 
-# Split data into train and test sets
+# Split the data into train and test sets
 train, test = train_test_split(data, test_size=0.2, random_state=42, stratify=data["Target"])
 
 # Define an imputer to handle NaN values
