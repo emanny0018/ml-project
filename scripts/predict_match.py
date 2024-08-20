@@ -34,9 +34,7 @@ def compare_team_matches(df, home_team, away_team):
         away_team_name = match['Away'].capitalize()
         home_goals = match['HomeGoals']
         away_goals = match['AwayGoals']
-        actual_result = 'N/A'
-        if 'Target' in match:
-            actual_result = 'Home Win' if match['Target'] == 0 else ('Away Win' if match['Target'] == 1 else 'Draw')
+        actual_result = 'Home Win' if match['Target'] == 0 else ('Away Win' if match['Target'] == 1 else 'Draw')
 
         print(f"{match_date}: {home_team_name} {home_goals}-{away_goals} {away_team_name} (Actual: {actual_result})")
 
@@ -46,6 +44,12 @@ def display_available_teams(df):
     print("\nAvailable teams in the dataset:")
     for team in teams:
         print(f"  - {team}")
+
+def calculate_predicted_scores(predicted_proba):
+    """Calculate predicted scores based on probabilities."""
+    home_goals = int(predicted_proba[0][0] * 3)
+    away_goals = int(predicted_proba[0][1] * 3)
+    return home_goals, away_goals
 
 if __name__ == "__main__":
     # Load the trained model
@@ -85,30 +89,34 @@ if __name__ == "__main__":
     prediction = model.predict(features)
     predicted_proba = model.predict_proba(features)
 
+    # Calculate predicted scores
+    home_goals, away_goals = calculate_predicted_scores(predicted_proba)
+
     # Interpret the result
     result_map = {0: "Home Win", 1: "Away Win", 2: "Draw"}
     predicted_result = result_map.get(prediction[0], "Unknown Result")
     
-    # Output the predicted result
+    # Output the predicted result and scores
     print(f"\nPredicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}")
     print(f"Predicted Result: {predicted_result}")
+    print(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}")
     print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
     
     # Actual result from the dataset (to calculate accuracy, if available)
-    if 'Target' in features:
-        actual_result = 'Home Win' if features['Target'] == 0 else ('Away Win' if features['Target'] == 1 else 'Draw')
-        # Calculate accuracy based on actual result
-        accuracy = accuracy_score([actual_result], [predicted_result])
-        print(f"Accuracy of Prediction: {accuracy:.2f}")
+    actual_result = 'Home Win' if features['Target'] == 0 else ('Away Win' if features['Target'] == 1 else 'Draw')
+    
+    # Calculate accuracy based on actual result
+    accuracy = accuracy_score([actual_result], [predicted_result])
+    print(f"Accuracy of Prediction: {accuracy:.2f}")
 
     # Save the results
     results_path = "data/prediction_results.txt"
     with open(results_path, "w") as f:
         f.write(f"Predicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}\n")
         f.write(f"Predicted Result: {predicted_result}\n")
+        f.write(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}\n")
         f.write(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}\n")
-        if 'Target' in features:
-            f.write(f"Actual Result: {actual_result}\n")
-            f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
+        f.write(f"Actual Result: {actual_result}\n")
+        f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
     
     print(f"\nPrediction results saved to {results_path}.")
