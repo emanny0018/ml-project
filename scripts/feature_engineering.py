@@ -26,6 +26,10 @@ def add_features(df, dataset_type, old_streaks=None):
         # Calculate streaks for old data
         df = calculate_streaks(df)
         
+        # Debug: Print streaks from the old data
+        print("\nOld matches with streaks calculated:")
+        print(df[['Home', 'Home_Streak_Wins', 'Away', 'Away_Streak_Losses']].head(20))
+        
     elif dataset_type == 'new':
         df["Venue_Code"] = df["Venue"].astype("category").cat.codes
         df["Team_Code"] = df["Team"].astype("category").cat.codes
