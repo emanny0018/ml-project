@@ -1,0 +1,54 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        # Print numpy version to ensure compatibility
+        python -c "import numpy; print('Numpy version:', numpy.__version__)"
+
+    - name: Download trained model
+      uses: actions/download-artifact@v2
+      with:
+        name: trained-model
+        path: data/voting_classifier.pkl
+
+    - name: Run model evaluation
+      run: python scripts/model_evaluation.py
+
+    - name: Upload evaluation results
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluation-results
+        path: data/evaluation_results.csv
+
+    - name: Run match prediction
+      env:
+        HOME_TEAM: "manchestercity"  # Example value, can be set dynamically
+        AWAY_TEAM: "fulham"       # Example value, can be set dynamically
+      run: python scripts/predict_match.py
+
+    - name: Upload prediction results
+      uses: actions/upload-artifact@v4
+      with:
+        name: prediction-results
+        path: data/prediction_results.txt
