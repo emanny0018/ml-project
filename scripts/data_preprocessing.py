@@ -9,7 +9,7 @@ def map_result_to_target(df):
     return df
 
 def map_ftr_to_target(df):
-    if 'FTR' in df.columns):
+    if 'FTR' in df.columns:
         df['Target'] = df['FTR'].map({'H': 0, 'A': 1, 'D': 2})
     else:
         print("'FTR' column is missing. 'Target' column will not be created.")
