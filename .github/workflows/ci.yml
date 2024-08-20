@@ -45,23 +45,3 @@ jobs:
         path: |
           data/fe_old_matches.csv
           data/fe_new_matches.csv
-
-    - name: Run model training
-      run: python scripts/model_training.py
-
-    - name: Upload trained model
-      uses: actions/upload-artifact@v4
-      with:
-        name: prediction_model
-        path: |
-          data/voting_classifier.pkl
-
-    - name: Set Environment Variables_
-      run: |
-        echo "HOME_TEAM=manchester utd" >> $GITHUB_ENV
-        echo "AWAY_TEAM=fulham" >> $GITHUB_ENV
-        echo "MATCH_DATE=2024-08-16" >> $GITHUB_ENV
-        echo "SEASON_END_YEAR=2025" >> $GITHUB_ENV
-
-    - name: Run prediction
-      run: python scripts/predict_match.py
