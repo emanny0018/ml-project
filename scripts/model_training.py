@@ -1,7 +1,7 @@
 import pandas as pd
 from xgboost import XGBClassifier
 from sklearn.ensemble import RandomForestClassifier, VotingClassifier
-from sklearn.model_selection import GridSearchCV, cross_val_score, train_test_split
+from sklearn.model_selection import GridSearchCV, cross_val_score
 from sklearn.metrics import accuracy_score, confusion_matrix, classification_report
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline
@@ -10,9 +10,8 @@ import os
 from sklearn.utils import resample
 import numpy as np
 
-# Load the feature-engineered datasets
-train = pd.read_csv('data/fe_old_matches.csv')
-test = pd.read_csv('data/fe_new_matches.csv')
+# Load the feature-engineered dataset
+data = pd.read_csv('data/fe_combined_matches.csv')
 
 # Define the predictors based on feature engineering
 advanced_predictors = [
@@ -20,6 +19,9 @@ advanced_predictors = [
     "Venue_Opp_Interaction", "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
     "Home_Advantage", "Home_Streak_Wins", "Away_Streak_Losses"
 ]
+
+# Split data into train and test sets
+train, test = train_test_split(data, test_size=0.2, random_state=42, stratify=data["Target"])
 
 # Define an imputer to handle NaN values
 imputer = SimpleImputer(strategy='mean')
