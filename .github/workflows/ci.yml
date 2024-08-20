@@ -63,3 +63,15 @@ jobs:
       with:
         name: evaluation-results
         path: data/evaluation_results.csv
+        
+    - name: Run match prediction
+      run: |
+        export HOME_TEAM="manchestercity"
+        export AWAY_TEAM="liverpool"
+        python scripts/predict_match.py
+
+    - name: Upload prediction results
+      uses: actions/upload-artifact@v4
+      with:
+        name: prediction-results
+        path: data/prediction_results.txt    
