@@ -38,20 +38,13 @@ def add_features(df, dataset_type, old_streaks=None):
         df["Decayed_Rolling_GA"] = df.groupby('Team')['GA'].transform(lambda x: x.ewm(alpha=0.9).mean())
         df["Team_Advantage"] = df.groupby('Team')['GF'].transform(lambda x: x.rolling(5, min_periods=1).mean()) - df.groupby('Opponent')['GA'].transform(lambda x: x.rolling(5, min_periods=1).mean())
         
-        # Ensure streak columns exist in new data
-        df['Home_Streak_Wins'] = np.nan
-        df['Away_Streak_Losses'] = np.nan
-        
+        # Map old streaks to new data
         if old_streaks is not None:
-            for index, row in df.iterrows():
-                home_team = row['Team']
-                away_team = row['Opponent']
-                
-                if home_team in old_streaks:
-                    df.at[index, 'Home_Streak_Wins'] = old_streaks[home_team]['Home_Streak_Wins']
-                
-                if away_team in old_streaks:
-                    df.at[index, 'Away_Streak_Losses'] = old_streaks[away_team]['Away_Streak_Losses']
+            streak_mapping = old_streaks.set_index('Home')['Home_Streak_Wins'].to_dict()
+            df['Home_Streak_Wins'] = df['Team'].map(streak_mapping)
+        
+            streak_mapping = old_streaks.set_index('Away')['Away_Streak_Losses'].to_dict()
+            df['Away_Streak_Losses'] = df['Opponent'].map(streak_mapping)
     
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
@@ -63,25 +56,17 @@ def apply_feature_engineering():
     old_matches = pd.read_csv('data/preprocessed_old_matches.csv')
     new_matches = pd.read_csv('data/preprocessed_new_matches.csv')
 
-    # Add features to old matches
+    # Add features to old matches and calculate streaks
     old_matches = add_features(old_matches, 'old')
 
-    # Store streaks from old matches
-    old_streaks = old_matches.groupby('Home').agg({
-        'Home_Streak_Wins': 'last',
-        'Away_Streak_Losses': 'last'
-    }).to_dict('index')
-
-    # Add features to new matches
-    new_matches = add_features(new_matches, 'new', old_streaks=old_streaks)
+    # Add features to new matches and apply old streaks
+    new_matches = add_features(new_matches, 'new', old_streaks=old_matches)
 
     # Save the feature-engineered data
     old_matches.to_csv('data/fe_old_matches.csv', index=False)
     new_matches.to_csv('data/fe_new_matches.csv', index=False)
 
-    print("Feature engineering completed and files saved.")
-
-    # Display the first few rows for verification
+    # Debug output
     print("\nFirst few rows of new_matches after feature engineering:")
     print(new_matches[['Team', 'Opponent', 'Home_Streak_Wins', 'Away_Streak_Losses']].head(20))
 
