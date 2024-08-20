@@ -24,6 +24,16 @@ test_predictions = model.predict(test[advanced_predictors])
 accuracy = accuracy_score(test["Target"], test_predictions)
 accuracy_percentage = accuracy * 100
 
+# Save results to a CSV file
+results_df = pd.DataFrame({
+    "Accuracy": [accuracy_percentage],
+    "Confusion_Matrix": [conf_matrix.tolist()],
+    "Classification_Report": [class_report]
+})
+results_df.to_csv('data/evaluation_results.csv', index=False)
+
+print("Evaluation results saved to 'data/evaluation_results.csv'")
+
 # Output results
 print(f"Accuracy: {accuracy_percentage:.2f}%")
 print("Confusion Matrix:")
