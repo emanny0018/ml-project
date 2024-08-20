@@ -40,11 +40,11 @@ def add_features(df, dataset_type, old_streaks=None):
         
         # Map old streaks to new data
         if old_streaks is not None:
-            streak_mapping = old_streaks.set_index('Home')['Home_Streak_Wins'].to_dict()
-            df['Home_Streak_Wins'] = df['Team'].map(streak_mapping)
-        
-            streak_mapping = old_streaks.set_index('Away')['Away_Streak_Losses'].to_dict()
-            df['Away_Streak_Losses'] = df['Opponent'].map(streak_mapping)
+            home_streak_mapping = old_streaks.set_index('Home')['Home_Streak_Wins'].to_dict()
+            away_streak_mapping = old_streaks.set_index('Away')['Away_Streak_Losses'].to_dict()
+
+            df['Home_Streak_Wins'] = df['Team'].map(home_streak_mapping)
+            df['Away_Streak_Losses'] = df['Opponent'].map(away_streak_mapping)
     
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
