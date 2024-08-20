@@ -7,20 +7,12 @@ def load_data(file_path):
     """Load dataset from a file."""
     return pd.read_csv(file_path)
 
-def get_match_features(df, home_team, away_team, match_date, season_end_year):
+def get_match_features(df, home_team, away_team):
     """Extract features for a specific match."""
-    match = df[(df['Home'] == home_team) & 
-               (df['Away'] == away_team) & 
-               (df['Date'] == match_date) & 
-               (df['Season_End_Year'] == int(season_end_year))]
+    match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
     
     if match.empty:
-        print(f"Match not found with the following details:")
-        print(f"Home Team: {home_team}")
-        print(f"Away Team: {away_team}")
-        print(f"Match Date: {match_date}")
-        print(f"Season End Year: {season_end_year}")
-        raise ValueError("Match not found in the dataset. Please check the team names, date, and season end year.")
+        raise ValueError("Match not found in the dataset. Please check the team names.")
     
     return match.iloc[0]
 
@@ -53,6 +45,12 @@ def display_available_teams(df):
     for team in teams:
         print(f"  - {team}")
 
+def calculate_predicted_scores(predicted_proba):
+    """Calculate predicted scores based on probabilities."""
+    home_goals = int(predicted_proba[0][0] * 3)
+    away_goals = int(predicted_proba[0][1] * 3)
+    return home_goals, away_goals
+
 if __name__ == "__main__":
     # Load the trained model
     model_path = 'data/voting_classifier.pkl'
@@ -67,17 +65,15 @@ if __name__ == "__main__":
     # Get inputs from environment variables
     home_team = os.getenv("HOME_TEAM", "").strip().lower()
     away_team = os.getenv("AWAY_TEAM", "").strip().lower()
-    match_date = os.getenv("MATCH_DATE", "").strip()
-    season_end_year = os.getenv("SEASON_END_YEAR", "").strip()
 
-    if not home_team or not away_team or not match_date or not season_end_year:
-        raise ValueError("Missing input. Ensure that HOME_TEAM, AWAY_TEAM, MATCH_DATE, and SEASON_END_YEAR are set.")
+    if not home_team or not away_team:
+        raise ValueError("Missing input. Ensure that HOME_TEAM and AWAY_TEAM are set.")
 
     # Compare past matches between the teams
     compare_team_matches(df, home_team, away_team)
 
     # Extract features for the prediction
-    features = get_match_features(df, home_team, away_team, match_date, season_end_year)
+    features = get_match_features(df, home_team, away_team)
 
     # Define predictors based on your feature engineering process
     advanced_predictors = [
@@ -93,13 +89,17 @@ if __name__ == "__main__":
     prediction = model.predict(features)
     predicted_proba = model.predict_proba(features)
 
+    # Calculate predicted scores
+    home_goals, away_goals = calculate_predicted_scores(predicted_proba)
+
     # Interpret the result
     result_map = {0: "Home Win", 1: "Away Win", 2: "Draw"}
     predicted_result = result_map.get(prediction[0], "Unknown Result")
     
-    # Output the predicted result
+    # Output the predicted result and scores
     print(f"\nPredicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}")
     print(f"Predicted Result: {predicted_result}")
+    print(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}")
     print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
     
     # Actual result from the dataset (to calculate accuracy, if available)
@@ -114,6 +114,7 @@ if __name__ == "__main__":
     with open(results_path, "w") as f:
         f.write(f"Predicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}\n")
         f.write(f"Predicted Result: {predicted_result}\n")
+        f.write(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}\n")
         f.write(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}\n")
         f.write(f"Actual Result: {actual_result}\n")
         f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
