@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        # Print numpy version to check
+        python -c "import numpy; print('Numpy version:', numpy.__version__)"
+
+    - name: Run data preprocessing
+      run: python scripts/data_preprocessing.py
+
+    - name: Upload preprocessed data
+      uses: actions/upload-artifact@v4
+      with:
+        name: preprocessed-data
+        path: |
+          data/preprocessed_old_matches.csv
+          data/preprocessed_new_matches.csv
+          data/combined_matches.csv
+
+    - name: Run feature engineering
+      run: python scripts/feature_engineering.py
+
+    - name: Upload feature-engineered data
+      uses: actions/upload-artifact@v4
+      with:
+        name: feature-engineered-data
+        path: data/fe_combined_matches.csv
+
+    - name: Run model training
+      run: python scripts/model_training.py
+
+    - name: Upload trained model
+      uses: actions/upload-artifact@v4
+      with:
+        name: trained-model
+        path: data/voting_classifier.pkl
+
+    - name: Run model evaluation
+      run: python scripts/model_evaluation.py
+
+    - name: Upload evaluation results
+      uses: actions/upload-artifact@v4
+      with:
+        name: evaluation-results
+        path: data/evaluation_results.csv
+
+    - name: Run match prediction
+      env:
+        HOME_TEAM: "manchestercity" # Example values, these can be set through environment variables
+        AWAY_TEAM: "liverpool"
+      run: python scripts/predict_match.py
+
+    - name: Upload prediction results
+      uses: actions/upload-artifact@v4
+      with:
+        name: prediction-results
+        path: data/prediction_results.txt
