@@ -16,16 +16,19 @@ def add_features(df, dataset_type):
         df['Away_Streak_Losses'] = df.groupby('Away')['Target'].transform(lambda x: (x == 1).rolling(window=5, min_periods=1).sum())
     
     elif dataset_type == 'new':
+        # Ensure that Home and Away columns are populated
+        df.rename(columns={"Team": "Home", "Opponent": "Away"}, inplace=True)
+        
         df["Venue_Code"] = df["Venue"].astype("category").cat.codes
-        df["Team_Code"] = df["Team"].astype("category").cat.codes
-        df["Opponent_Code"] = df["Opponent"].astype("category").cat.codes
+        df["Team_Code"] = df["Home"].astype("category").cat.codes
+        df["Opponent_Code"] = df["Away"].astype("category").cat.codes
         df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
-        df["Rolling_GF"] = df.groupby("Team")["GF"].transform(lambda x: x.rolling(3, min_periods=1).mean())
-        df["Rolling_GA"] = df.groupby("Team")["GA"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+        df["Rolling_GF"] = df.groupby("Home")["GF"].transform(lambda x: x.rolling(3, min_periods=1).mean())
+        df["Rolling_GA"] = df.groupby("Away")["GA"].transform(lambda x: x.rolling(3, min_periods=1).mean())
         df["Venue_Opp_Interaction"] = df["Venue_Code"] * df["Opponent_Code"]
-        df["Decayed_Rolling_GF"] = df.groupby('Team')['GF'].transform(lambda x: x.ewm(alpha=0.9).mean())
-        df["Decayed_Rolling_GA"] = df.groupby('Team')['GA'].transform(lambda x: x.ewm(alpha=0.9).mean())
-        df["Team_Advantage"] = df.groupby('Team')['GF'].transform(lambda x: x.rolling(5, min_periods=1).mean()) - df.groupby('Opponent')['GA'].transform(lambda x: x.rolling(5, min_periods=1).mean())
+        df["Decayed_Rolling_GF"] = df.groupby('Home')['GF'].transform(lambda x: x.ewm(alpha=0.9).mean())
+        df["Decayed_Rolling_GA"] = df.groupby('Away')['GA'].transform(lambda x: x.ewm(alpha=0.9).mean())
+        df["Team_Advantage"] = df.groupby('Home')['GF'].transform(lambda x: x.rolling(5, min_periods=1).mean()) - df.groupby('Away')['GA'].transform(lambda x: x.rolling(5, min_periods=1).mean())
     
     else:
         raise ValueError("Invalid dataset type provided. Use 'old' or 'new'.")
@@ -36,6 +39,16 @@ def apply_feature_engineering():
     # Load the preprocessed data
     old_matches = pd.read_csv('data/preprocessed_old_matches.csv')
     new_matches = pd.read_csv('data/preprocessed_new_matches.csv')
+
+    # Check if `Season_End_Year` and `Wk` are present in the new matches and correct them if missing
+    if 'Season_End_Year' not in new_matches.columns:
+        new_matches['Season_End_Year'] = 2024  # or the correct year if it's different
+    if 'Wk' not in new_matches.columns:
+        new_matches['Wk'] = np.nan  # Set to NaN or calculate accordingly
+
+    # Ensure Home and Away columns are populated before applying feature engineering
+    if 'Home' not in new_matches.columns or 'Away' not in new_matches.columns:
+        new_matches.rename(columns={"Team": "Home", "Opponent": "Away"}, inplace=True)
 
     # Add features
     old_matches = add_features(old_matches, 'old')
