@@ -68,7 +68,7 @@ jobs:
     - name: Run match prediction
       env:
         HOME_TEAM: "manchestercity" # Example values, these can be set through environment variables
-        AWAY_TEAM: "liverpool"
+        AWAY_TEAM: "fulham"
       run: python scripts/predict_match.py
 
     - name: Upload prediction results
