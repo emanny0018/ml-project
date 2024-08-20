@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 
 def add_features(df):
+    # Add features based on your feature engineering process
     df["Venue_Code"] = df["Home"].astype("category").cat.codes
     df["Opp_Code"] = df["Away"].astype("category").cat.codes
     df["Day_Code"] = pd.to_datetime(df["Date"]).dt.dayofweek
