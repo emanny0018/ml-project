@@ -8,23 +8,19 @@ def load_data(file_path):
 
 def get_match_features(df, home_team, away_team):
     """Extract features for a specific match."""
-    print(f"Looking for match: {home_team} vs {away_team}")
     match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
-    print(match)
     
     if match.empty:
         raise ValueError("Match not found in the dataset. Please check the team names.")
     
     return match.iloc[0]
 
-def compare_team_matches(old_df, new_df, home_team, away_team):
-    """Display past matches between the teams from old and new datasets."""
-    past_matches = pd.concat([
-        old_df[(old_df['Home'] == home_team) & (old_df['Away'] == away_team)],
-        old_df[(old_df['Home'] == away_team) & (old_df['Away'] == home_team)],
-        new_df[(new_df['Home'] == home_team) & (new_df['Away'] == away_team)],
-        new_df[(new_df['Home'] == away_team) & (new_df['Away'] == home_team)]
-    ])
+def compare_team_matches(df, home_team, away_team):
+    """Display past matches between the teams."""
+    past_matches = df[
+        ((df['Home'] == home_team) & (df['Away'] == away_team)) |
+        ((df['Home'] == away_team) & (df['Away'] == home_team))
+    ]
 
     if past_matches.empty:
         print("No matches found for the specified teams.")
@@ -47,43 +43,20 @@ if __name__ == "__main__":
     model = load(model_path)
 
     # Load the engineered data
-    old_df = load_data('data/fe_old_matches.csv')
-    new_df = load_data('data/fe_new_matches.csv')
-
-    # Print available teams from fe_old_matches.csv
-    print("Available teams from old matches for input:")
-    available_old_teams = sorted(old_df['Home'].unique())
-    for team in available_old_teams:
-        print(f"  - {team}")
-
-    # Print available teams from fe_new_matches.csv
-    print("Available teams from new matches for input:")
-    available_new_teams = sorted(new_df['Home'].unique())
-    for team in available_new_teams:
-        print(f"  - {team}")
+    df = load_data('data/fe_combined_matches.csv')
 
     # Get inputs from environment variables
     home_team = os.getenv("HOME_TEAM", "").strip().lower()
     away_team = os.getenv("AWAY_TEAM", "").strip().lower()
-    match_date = os.getenv("MATCH_DATE", "").strip()
-    season_end_year = int(os.getenv("SEASON_END_YEAR", "").strip())
 
-    if not home_team or not away_team or not match_date or not season_end_year:
-        raise ValueError("Missing input. Ensure that HOME_TEAM, AWAY_TEAM, MATCH_DATE, and SEASON_END_YEAR are set.")
+    if not home_team or not away_team:
+        raise ValueError("Missing input. Ensure that HOME_TEAM and AWAY_TEAM are set.")
 
     # Compare past matches between the teams
-    compare_team_matches(old_df, new_df, home_team, away_team)
-
-    # Prepare the match info for prediction
-    match_info = pd.DataFrame({
-        'Home': [home_team],
-        'Away': [away_team],
-        'Date': [match_date],
-        'Season_End_Year': [season_end_year]
-    })
+    compare_team_matches(df, home_team, away_team)
 
     # Extract features for the prediction
-    features = get_match_features(new_df, home_team, away_team)
+    features = get_match_features(df, home_team, away_team)
 
     # Define predictors based on your feature engineering process
     advanced_predictors = [
