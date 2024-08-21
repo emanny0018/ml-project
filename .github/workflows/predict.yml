@@ -3,9 +3,9 @@ name: CI - Prediction Only
 on:
   workflow_dispatch:  # This will allow you to manually trigger the workflow
   push:
-    branches: [prod]
+    branches: [main]
   pull_request:
-    branches: [prod]
+    branches: [main]
 
 jobs:
   predict:
