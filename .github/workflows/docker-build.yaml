@@ -34,9 +34,9 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
-        context: ./ml-project  # The correct context to the Dockerfile
-        file: ./ml-project/Dockerfile  # Path to your Dockerfile
-        tags: emanny0018/ml-project:latest
+        context: .  # Context is the root of the repository where your Dockerfile is located
+        file: Dockerfile  # Directly referencing the Dockerfile in the root
+        tags: your-dockerhub-username/ml-project:latest
         push: true
         cache-from: type=gha,scope=${{ github.sha }}
         cache-to: type=gha,mode=max,scope=${{ github.sha }}
