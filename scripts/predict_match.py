@@ -8,7 +8,9 @@ def load_data(file_path):
     return pd.read_csv(file_path)
 
 def get_match_features(df, home_team, away_team):
-    """Extract features for a specific match."""
+    """Extract features for a specific match based on engineered features."""
+    # The features should be created to represent the upcoming match.
+    # This step assumes you have a way to simulate or calculate these features for the future match.
     match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
     
     if match.empty:
@@ -27,7 +29,7 @@ def compare_team_matches(df, home_team, away_team):
         print("No matches found for the specified teams.")
         return
 
-    print("\nPast Matches:")
+    print("\nHistorical Matches:")
     for idx, match in past_matches.iterrows():
         match_date = pd.to_datetime(match['Date']).strftime('%Y-%m-%d')
         home_team_name = match['Home'].capitalize()
@@ -72,7 +74,7 @@ if __name__ == "__main__":
     # Compare past matches between the teams
     compare_team_matches(df, home_team, away_team)
 
-    # Extract features for the prediction
+    # Extract features for the prediction based on the available data
     features = get_match_features(df, home_team, away_team)
 
     # Define predictors based on your feature engineering process
@@ -102,13 +104,6 @@ if __name__ == "__main__":
     print(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}")
     print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
     
-    # Actual result from the dataset (to calculate accuracy, if available)
-    actual_result = 'Home Win' if features['Target'] == 0 else ('Away Win' if features['Target'] == 1 else 'Draw')
-    
-    # Calculate accuracy based on actual result
-    accuracy = accuracy_score([actual_result], [predicted_result])
-    print(f"Accuracy of Prediction: {accuracy:.2f}")
-
     # Save the results
     results_path = "data/prediction_results.txt"
     with open(results_path, "w") as f:
@@ -116,7 +111,5 @@ if __name__ == "__main__":
         f.write(f"Predicted Result: {predicted_result}\n")
         f.write(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}\n")
         f.write(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}\n")
-        f.write(f"Actual Result: {actual_result}\n")
-        f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
     
     print(f"\nPrediction results saved to {results_path}.")
