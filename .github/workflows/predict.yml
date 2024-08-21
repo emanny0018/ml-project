@@ -39,7 +39,7 @@ jobs:
 
     - name: Run match prediction
       env:
-        HOME_TEAM: "chealsea" # Set the home team here
+        HOME_TEAM: "chelsea" # Set the home team here
         AWAY_TEAM: "leicester city"      # Set the away team here
         MATCH_DATE: "2024-08-18"    # Set the match date here
         SEASON_END_YEAR: "2025"     # Set the season end year here
