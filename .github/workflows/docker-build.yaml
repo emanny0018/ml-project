@@ -57,7 +57,7 @@ jobs:
         context: .  # Context is the root of the repository where your Dockerfile is located
         file: Dockerfile  # Directly referencing the Dockerfile in the root
         tags: |
-          emanny0018/predict_app:v1
+          emanny0018/predict_app:epl_app_v1
         push: true  # Only push if the Trivy scan passes
 
     - name: Post build info
