@@ -39,8 +39,8 @@ jobs:
 
     - name: Run match prediction
       env:
-        HOME_TEAM: "crystal palace" # Set the home team here
-        AWAY_TEAM: "southampton"      # Set the away team here
+        HOME_TEAM: "west ham" # Set the home team here
+        AWAY_TEAM: "nott'ham forest"      # Set the away team here
         MATCH_DATE: "2024-08-24"    # Set the match date here
         SEASON_END_YEAR: "2025"     # Set the season end year here
       run: python scripts/predict_match.py
