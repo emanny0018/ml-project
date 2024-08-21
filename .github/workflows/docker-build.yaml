@@ -37,7 +37,6 @@ jobs:
         context: .  # Context is the root of the repository where your Dockerfile is located
         file: Dockerfile  # Directly referencing the Dockerfile in the root
         tags: |
-          emanny0018/ml-project:latest
           emanny0018/ml-project:${{ github.run_number }}
           emanny0018/ml-project:${{ github.sha }}
         push: false  # Build but don't push yet
