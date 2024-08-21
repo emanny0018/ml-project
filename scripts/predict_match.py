@@ -7,20 +7,12 @@ def load_data(file_path):
     """Load dataset from a file."""
     return pd.read_csv(file_path)
 
-def get_match_features(df, home_team, away_team, match_date, season_end_year):
+def get_match_features(df, home_team, away_team):
     """Extract features for a specific match."""
-    match = df[(df['Home'] == home_team) & 
-               (df['Away'] == away_team) & 
-               (df['Date'] == match_date) & 
-               (df['Season_End_Year'] == int(season_end_year))]
+    match = df[(df['Home'] == home_team) & (df['Away'] == away_team)]
     
     if match.empty:
-        print(f"Match not found with the following details:")
-        print(f"Home Team: {home_team}")
-        print(f"Away Team: {away_team}")
-        print(f"Match Date: {match_date}")
-        print(f"Season End Year: {season_end_year}")
-        raise ValueError("Match not found in the dataset. Please check the team names, date, and season end year.")
+        raise ValueError("Match not found in the dataset. Please check the team names.")
     
     return match.iloc[0]
 
@@ -60,78 +52,71 @@ def calculate_predicted_scores(predicted_proba):
     return home_goals, away_goals
 
 if __name__ == "__main__":
-    try:
-        # Load the trained model
-        model_path = 'data/voting_classifier.pkl'
-        model = load(model_path)
+    # Load the trained model
+    model_path = 'data/voting_classifier.pkl'
+    model = load(model_path)
 
-        # Load the engineered data
-        df = load_data('data/fe_combined_matches.csv')
+    # Load the engineered data
+    df = load_data('data/fe_combined_matches.csv')
 
-        # Display available teams
-        display_available_teams(df)
+    # Display available teams
+    display_available_teams(df)
 
-        # Get inputs from environment variables
-        home_team = os.getenv("HOME_TEAM", "").strip().lower()
-        away_team = os.getenv("AWAY_TEAM", "").strip().lower()
-        match_date = os.getenv("MATCH_DATE", "").strip()
-        season_end_year = os.getenv("SEASON_END_YEAR", "").strip()
+    # Get inputs from environment variables
+    home_team = os.getenv("HOME_TEAM", "").strip().lower()
+    away_team = os.getenv("AWAY_TEAM", "").strip().lower()
 
-        if not home_team or not away_team or not match_date or not season_end_year:
-            raise ValueError("Missing input. Ensure that HOME_TEAM, AWAY_TEAM, MATCH_DATE, and SEASON_END_YEAR are set.")
+    if not home_team or not away_team:
+        raise ValueError("Missing input. Ensure that HOME_TEAM and AWAY_TEAM are set.")
 
-        # Compare past matches between the teams
-        compare_team_matches(df, home_team, away_team)
+    # Compare past matches between the teams
+    compare_team_matches(df, home_team, away_team)
 
-        # Extract features for the prediction
-        features = get_match_features(df, home_team, away_team, match_date, season_end_year)
+    # Extract features for the prediction
+    features = get_match_features(df, home_team, away_team)
 
-        # Define predictors based on your feature engineering process
-        advanced_predictors = [
-            "Venue_Code", "Opp_Code", "Day_Code", "Rolling_HomeGoals", "Rolling_AwayGoals", 
-            "Venue_Opp_Interaction", "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
-            "Home_Advantage", "Home_Streak_Wins", "Away_Streak_Losses"
-        ]
+    # Define predictors based on your feature engineering process
+    advanced_predictors = [
+        "Venue_Code", "Opp_Code", "Day_Code", "Rolling_HomeGoals", "Rolling_AwayGoals", 
+        "Venue_Opp_Interaction", "Decayed_Rolling_HomeGoals", "Decayed_Rolling_AwayGoals", 
+        "Home_Advantage", "Home_Streak_Wins", "Away_Streak_Losses"
+    ]
 
-        # Select the relevant features from the match data
-        features = features[advanced_predictors].to_frame().T
+    # Select the relevant features from the match data
+    features = features[advanced_predictors].to_frame().T
 
-        # Predict the outcome
-        prediction = model.predict(features)
-        predicted_proba = model.predict_proba(features)
+    # Predict the outcome
+    prediction = model.predict(features)
+    predicted_proba = model.predict_proba(features)
 
-        # Calculate predicted scores
-        home_goals, away_goals = calculate_predicted_scores(predicted_proba)
+    # Calculate predicted scores
+    home_goals, away_goals = calculate_predicted_scores(predicted_proba)
 
-        # Interpret the result
-        result_map = {0: "Home Win", 1: "Away Win", 2: "Draw"}
-        predicted_result = result_map.get(prediction[0], "Unknown Result")
-        
-        # Output the predicted result and scores
-        print(f"\nPredicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}")
-        print(f"Predicted Result: {predicted_result}")
-        print(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}")
-        print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
-        
-        # Actual result from the dataset (to calculate accuracy, if available)
-        actual_result = 'Home Win' if features['Target'] == 0 else ('Away Win' if features['Target'] == 1 else 'Draw')
-        
-        # Calculate accuracy based on actual result
-        accuracy = accuracy_score([actual_result], [predicted_result])
-        print(f"Accuracy of Prediction: {accuracy:.2f}")
-
-        # Save the results
-        results_path = "data/prediction_results.txt"
-        with open(results_path, "w") as f:
-            f.write(f"Predicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}\n")
-            f.write(f"Predicted Result: {predicted_result}\n")
-            f.write(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}\n")
-            f.write(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}\n")
-            f.write(f"Actual Result: {actual_result}\n")
-            f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
-        
-        print(f"\nPrediction results saved to {results_path}.")
+    # Interpret the result
+    result_map = {0: "Home Win", 1: "Away Win", 2: "Draw"}
+    predicted_result = result_map.get(prediction[0], "Unknown Result")
     
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        exit(1)
+    # Output the predicted result and scores
+    print(f"\nPredicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}")
+    print(f"Predicted Result: {predicted_result}")
+    print(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}")
+    print(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}")
+    
+    # Actual result from the dataset (to calculate accuracy, if available)
+    actual_result = 'Home Win' if features['Target'] == 0 else ('Away Win' if features['Target'] == 1 else 'Draw')
+    
+    # Calculate accuracy based on actual result
+    accuracy = accuracy_score([actual_result], [predicted_result])
+    print(f"Accuracy of Prediction: {accuracy:.2f}")
+
+    # Save the results
+    results_path = "data/prediction_results.txt"
+    with open(results_path, "w") as f:
+        f.write(f"Predicted Outcome for the new match: {home_team.capitalize()} vs {away_team.capitalize()}\n")
+        f.write(f"Predicted Result: {predicted_result}\n")
+        f.write(f"Predicted Score: {home_team.capitalize()} {home_goals}-{away_goals} {away_team.capitalize()}\n")
+        f.write(f"Predicted Score Probability: Home Win {predicted_proba[0][0]:.2f}, Away Win {predicted_proba[0][1]:.2f}, Draw {predicted_proba[0][2]:.2f}\n")
+        f.write(f"Actual Result: {actual_result}\n")
+        f.write(f"Accuracy of Prediction: {accuracy:.2f}\n")
+    
+    print(f"\nPrediction results saved to {results_path}.")
