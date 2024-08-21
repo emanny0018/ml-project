@@ -34,12 +34,12 @@ jobs:
     - name: Build and push Docker image
       uses: docker/build-push-action@v3
       with:
-        context: ml-project  # The context is the directory where your Dockerfile is located
-        file: ml-project/Dockerfile  # Path to your Dockerfile
+        context: ./ml-project  # The correct context to the Dockerfile
+        file: ./ml-project/Dockerfile  # Path to your Dockerfile
         tags: emanny0018/ml-project:latest
         push: true
         cache-from: type=gha,scope=${{ github.sha }}
         cache-to: type=gha,mode=max,scope=${{ github.sha }}
 
     - name: Post build info
-      run: echo "Docker image build and pushed successfully"
+      run: echo "Docker image built and pushed successfully"
