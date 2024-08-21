@@ -67,7 +67,8 @@ if __name__ == "__main__":
     # Get inputs from environment variables
     home_team = os.getenv("HOME_TEAM", "").strip().lower()
     away_team = os.getenv("AWAY_TEAM", "").strip().lower()
-
+    match_date = os.getenv("MATCH_DATE","").strip().lower()
+    season_end_year = os.getenv("SEASON_END_YEAR","").strip().lower()
     if not home_team or not away_team:
         raise ValueError("Missing input. Ensure that HOME_TEAM and AWAY_TEAM are set.")
 
