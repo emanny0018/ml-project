@@ -36,7 +36,7 @@ jobs:
       with:
         context: .  # Context is the root of the repository where your Dockerfile is located
         file: Dockerfile  # Directly referencing the Dockerfile in the root
-        tags: your-dockerhub-username/ml-project:latest
+        tags: emanny0018/ml-project:latest
         push: true
         cache-from: type=gha,scope=${{ github.sha }}
         cache-to: type=gha,mode=max,scope=${{ github.sha }}
