@@ -11,9 +11,12 @@ RUN apt-get update && apt-get install -y curl
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the model and data files from your GitHub repo
-RUN curl -LJO https://github.com/your-dockerhub-username/ml-project/raw/main/data/fe_combined_matches.csv
-RUN curl -LJO https://github.com/your-dockerhub-username/ml-project/raw/main/data/voting_classifier.pkl
+# Create the data directory
+RUN mkdir -p /app/data
+
+# Download the model and data files from your GitHub repo
+RUN curl -LJO https://github.com/emanny0018/ml-project/raw/main/data/fe_combined_matches.csv -o /app/data/fe_combined_matches.csv
+RUN curl -LJO https://github.com/emanny0018/ml-project/raw/main/data/voting_classifier.pkl -o /app/data/voting_classifier.pkl
 
 # Copy the prediction script into the container
 COPY scripts/predict_match.py /app/predict_match.py
