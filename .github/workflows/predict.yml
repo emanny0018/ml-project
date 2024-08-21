@@ -1,0 +1,52 @@
+name: CI - Prediction Only
+
+on:
+  workflow_dispatch:  # This will allow you to manually trigger the workflow
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  predict:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.8'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        # Print numpy version to check
+        python -c "import numpy; print('Numpy version:', numpy.__version__)"
+
+    - name: Download pre-trained model
+      run: |
+        mkdir -p data
+        curl -LJO https://github.com/emanny0018/ml-project/raw/main/data/voting_classifier.pkl
+
+    - name: Download feature-engineered data
+      run: |
+        curl -LJO https://github.com/emanny0018/ml-project/raw/main/data/fe_combined_matches.csv
+        mv fe_combined_matches.csv data/
+
+    - name: Run match prediction
+      env:
+        HOME_TEAM: "manchester utd" # Set the home team here
+        AWAY_TEAM: "everton"      # Set the away team here
+        MATCH_DATE: "2024-08-24"    # Set the match date here
+        SEASON_END_YEAR: "2025"     # Set the season end year here
+      run: python scripts/predict_match.py
+
+    - name: Upload prediction results
+      uses: actions/upload-artifact@v4
+      with:
+        name: prediction-results
+        path: data/prediction_results.txt
