@@ -4,16 +4,13 @@ FROM python:3.8-slim
 # Set the working directory in the container
 WORKDIR /app
 
-# Install curl and other necessary utilities
-RUN apt-get update && apt-get install -y curl && rm -rf /var/lib/apt/lists/*
-
 # Install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Download the model and data files from your GitHub repo
-RUN curl -L -o fe_combined_matches.csv https://github.com/emanny0018/ml-project/raw/main/data/fe_combined_matches.csv
-RUN curl -L -o voting_classifier.pkl https://github.com/emanny0018/ml-project/raw/main/data/voting_classifier.pkl
+# Copy the model and data files from your local machine to the container
+COPY data/fe_combined_matches.csv /app/fe_combined_matches.csv
+COPY data/voting_classifier.pkl /app/voting_classifier.pkl
 
 # Copy the prediction script into the container
 COPY scripts/predict_match.py /app/predict_match.py
